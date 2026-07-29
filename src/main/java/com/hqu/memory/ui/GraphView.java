@@ -45,6 +45,11 @@ public class GraphView {
         int catIndex;
     }
 
+    private double scale = 1.0;
+    private double offsetX = 0, offsetY = 0;
+    private double lastMouseX, lastMouseY;
+    private boolean dragging = false;
+
     private static final String[] CAT_COLORS = {
             "#3b82f6", "#ef4444", "#22c55e", "#f59e0b",
             "#a855f7", "#ec4899", "#06b6d4", "#f97316"
@@ -86,13 +91,17 @@ public class GraphView {
         // 交互
         canvas.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
             int old = hoveredNode;
-            hoveredNode = findNode(e.getX(), e.getY());
+            double mx = (e.getX() - offsetX) / scale;
+            double my = (e.getY() - offsetY) / scale;
+            hoveredNode = findNode(mx, my);
             if (old != hoveredNode) draw();
             canvas.setStyle(hoveredNode >= 0 ? "-fx-cursor: hand;" : "-fx-cursor: default;");
         });
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            int idx = findNode(e.getX(), e.getY());
+            double mx = (e.getX() - offsetX) / scale;
+            double my = (e.getY() - offsetY) / scale;
+            int idx = findNode(mx, my);
             if (idx >= 0) {
                 if (selectedNode == idx) {
                     selectedNode = -1;
@@ -103,7 +112,7 @@ public class GraphView {
                     selectedNode = idx;
                     NodeData n = nodes.get(idx);
                     detailLabel.setText("📌 " + n.front + "\n📝 " + n.back);
-                    infoLabel.setText("⭐ 已选中 · " + n.category + " · stage " + n.stage);
+                    infoLabel.setText("已选中 · " + n.category + " · stage " + n.stage);
                     infoLabel.setStyle("-fx-text-fill: rgba(255,200,100,0.6); -fx-font-size: 12px; -fx-padding: 0 0 0 12;");
                 }
             } else {
@@ -114,6 +123,61 @@ public class GraphView {
             }
             draw();
         });
+
+        // 滚轮缩放
+        canvas.setOnScroll(e -> {
+            double delta = 1 + e.getDeltaY() * 0.001;
+            double newScale = scale * delta;
+            if (newScale < 0.3) newScale = 0.3;
+            if (newScale > 3.0) newScale = 3.0;
+            double mx = e.getX();
+            double my = e.getY();
+            offsetX = mx - (mx - offsetX) * (newScale / scale);
+            offsetY = my - (my - offsetY) * (newScale / scale);
+            scale = newScale;
+            draw();
+        });
+
+        // 鼠标拖拽
+        canvas.setOnMousePressed(e -> { lastMouseX = e.getX(); lastMouseY = e.getY(); dragging = true; });
+        canvas.setOnMouseDragged(e -> {
+            if (!dragging) return;
+            offsetX += e.getX() - lastMouseX;
+            offsetY += e.getY() - lastMouseY;
+            lastMouseX = e.getX();
+            lastMouseY = e.getY();
+            draw();
+        });
+        canvas.setOnMouseReleased(e -> dragging = false);
+
+        // 呼吸动画
+
+        // 滚轮缩放
+        canvas.setOnScroll(e -> {
+            double delta = 1 + e.getDeltaY() * 0.001;
+            double newScale = scale * delta;
+            if (newScale < 0.3) newScale = 0.3;
+            if (newScale > 3.0) newScale = 3.0;
+            // 以鼠标位置为中心缩放
+            double mx = e.getX();
+            double my = e.getY();
+            offsetX = mx - (mx - offsetX) * (newScale / scale);
+            offsetY = my - (my - offsetY) * (newScale / scale);
+            scale = newScale;
+            draw();
+        });
+
+        // 鼠标拖拽平移
+        canvas.setOnMousePressed(e -> { lastMouseX = e.getX(); lastMouseY = e.getY(); dragging = true; });
+        canvas.setOnMouseDragged(e -> {
+            if (!dragging) return;
+            offsetX += e.getX() - lastMouseX;
+            offsetY += e.getY() - lastMouseY;
+            lastMouseX = e.getX();
+            lastMouseY = e.getY();
+            draw();
+        });
+        canvas.setOnMouseReleased(e -> dragging = false);
 
         // 呼吸动画
         AnimationTimer timer = new AnimationTimer() {
@@ -186,6 +250,7 @@ public class GraphView {
     }
 
     private int findNode(double mx, double my) {
+        // mx, my 已经在调用处做了坐标变换，所以直接用
         for (int i = 0; i < nodes.size(); i++) {
             NodeData n = nodes.get(i);
             double dx = mx - n.x;
@@ -213,6 +278,9 @@ public class GraphView {
         }
 
         // 画连线（同分类节点间连线）
+        g.save();
+        g.translate(offsetX, offsetY);
+        g.scale(scale, scale);
         g.setLineWidth(0.8);
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -226,42 +294,42 @@ public class GraphView {
         // 画节点
         for (int i = 0; i < nodes.size(); i++) {
             NodeData n = nodes.get(i);
-            Color baseColor = Color.web(CAT_COLORS[n.catIndex % CAT_COLORS.length]);
+            double nx = n.x;
+            double ny = n.y;
+            double nr = n.radius;
             boolean hovered = (i == hoveredNode);
             boolean selected = (i == selectedNode);
+            Color baseColor = Color.web(CAT_COLORS[n.catIndex % CAT_COLORS.length]);
 
-            double r = n.radius;
+            double r = nr;
             if (hovered) r += 4;
             if (selected) r += 3;
 
-            // 发光
             RadialGradient glow = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE,
                     new Stop(0, Color.rgb((int)(baseColor.getRed()*255), (int)(baseColor.getGreen()*255), (int)(baseColor.getBlue()*255), 0.3)),
                     new Stop(1, Color.rgb((int)(baseColor.getRed()*255), (int)(baseColor.getGreen()*255), (int)(baseColor.getBlue()*255), 0)));
             g.setFill(glow);
-            g.fillOval(n.x - r - 6, n.y - r - 6, (r + 6) * 2, (r + 6) * 2);
+            g.fillOval(nx - r - 6, ny - r - 6, (r + 6) * 2, (r + 6) * 2);
 
-            // 节点主体
             g.setFill(Color.rgb((int)(baseColor.getRed()*255), (int)(baseColor.getGreen()*255), (int)(baseColor.getBlue()*255), 0.45));
-            g.fillOval(n.x - r, n.y - r, r * 2, r * 2);
+            g.fillOval(nx - r, ny - r, r * 2, r * 2);
             g.setStroke(baseColor);
             g.setLineWidth(selected ? 2.5 : 1.5);
-            g.strokeOval(n.x - r, n.y - r, r * 2, r * 2);
+            g.strokeOval(nx - r, ny - r, r * 2, r * 2);
 
-            // 节点内文字
             g.setFill(Color.rgb(255, 255, 255, 0.8));
             g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, (int)Math.min(r * 0.7, 12)));
             g.setTextAlign(TextAlignment.CENTER);
-            g.fillText(String.valueOf(n.stage), n.x, n.y + 4);
+            g.fillText(String.valueOf(n.stage), nx, ny + 4);
 
-            // 悬停时上方显示标签
             if (hovered) {
                 g.setFill(Color.rgb(255, 255, 255, 0.7));
                 g.setFont(Font.font("Microsoft YaHei", 10));
                 g.setTextAlign(TextAlignment.CENTER);
-                g.fillText(n.label, n.x, n.y - r - 10);
+                g.fillText(n.label, nx, ny - r - 10);
             }
         }
+        g.restore();
 
         // 分类图例
         Map<String, Integer> catIdxMap = new LinkedHashMap<>();
