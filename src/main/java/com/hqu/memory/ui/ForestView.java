@@ -42,6 +42,8 @@ public class ForestView {
     private String[] treeLabel;
     private int treeCount = 0;
     private int hoveredIdx = -1;
+    private int clickedIdx = -1;
+    private Tooltip activeTip = null;
 
     public ForestView() {
         view = new BorderPane();
@@ -84,20 +86,32 @@ public class ForestView {
             updateCursor();
         });
 
-        // 点击弹提示
+        // 点击弹提示（点击同一棵树切换显示/隐藏）
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             int idx = findTreeAt(e.getX(), e.getY());
             if (idx >= 0 && idx < treeCount) {
-                Tooltip tip = new Tooltip(treeLabel[idx]);
-                tip.setStyle("-fx-background-color: #1e1b34; -fx-text-fill: white; -fx-font-size: 12px; "
-                        + "-fx-background-radius: 10; -fx-padding: 8 14; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;");
-                Tooltip.install(canvas, tip);
-                tip.show(canvas, e.getScreenX(), e.getScreenY() - 30);
-                // 3秒后自动消失
-                new Thread(() -> {
-                    try { Thread.sleep(3000); } catch (InterruptedException ex) {}
-                    javafx.application.Platform.runLater(() -> Tooltip.uninstall(canvas, tip));
-                }).start();
+                if (clickedIdx == idx) {
+                    // 再次点击同一棵树 -> 隐藏
+                    clickedIdx = -1;
+                    Tooltip.uninstall(canvas, activeTip);
+                    activeTip = null;
+                } else {
+                    clickedIdx = idx;
+                    if (activeTip != null) Tooltip.uninstall(canvas, activeTip);
+                    Tooltip tip = new Tooltip(treeLabel[idx]);
+                    tip.setStyle("-fx-background-color: #1e1b34; -fx-text-fill: white; -fx-font-size: 12px; "
+                            + "-fx-background-radius: 10; -fx-padding: 8 14; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;");
+                    Tooltip.install(canvas, tip);
+                    tip.show(canvas, e.getScreenX(), e.getScreenY() - 30);
+                    activeTip = tip;
+                }
+            } else {
+                // 点击空白区域 -> 隐藏
+                clickedIdx = -1;
+                if (activeTip != null) {
+                    Tooltip.uninstall(canvas, activeTip);
+                    activeTip = null;
+                }
             }
         });
 
