@@ -227,10 +227,15 @@ public class CurveView {
                 .collect(Collectors.groupingBy(FlashCard::getCategory));
 
         int colorIdx = 0;
+        boolean singleMode = grouped.size() == 1;
         for (var entry : grouped.entrySet()) {
             String cat = entry.getKey();
             List<FlashCard> catCards = entry.getValue();
             Color color = Color.web(CAT_COLORS[colorIdx % CAT_COLORS.length]);
+
+            Color baseColor = singleMode ? Color.web("#22c55e") : color;
+            Color midColor = singleMode ? Color.web("#eab308") : color;
+            Color endColor = singleMode ? Color.web("#ef4444") : color;
             colorIdx++;
 
             // 按 stage 统计
@@ -239,7 +244,7 @@ public class CurveView {
             for (FlashCard c : catCards) stageCount.put(c.getStage(), stageCount.get(c.getStage()) + 1);
             long totalCat = catCards.size();
 
-            // 画曲线
+            // 画曲线（渐变色）
             g.beginPath();
             boolean firstPt = true;
             for (int px = 0; px <= aw; px++) {
@@ -255,9 +260,23 @@ public class CurveView {
                 double x = ax + px, y = ay + ah - ah * ret;
                 if (firstPt) { g.moveTo(x, y); firstPt = false; } else g.lineTo(x, y);
             }
-            Color gc = Color.rgb((int)(color.getRed()*255), (int)(color.getGreen()*255), (int)(color.getBlue()*255), 0.3);
-            g.setStroke(gc); g.setLineWidth(4); g.stroke();
-            g.setStroke(color); g.setLineWidth(2.5); g.stroke();
+
+            // 单学科模式：渐变曲线（绿→黄→红），多学科：纯色
+            Color curveBase, curveEnd;
+            if (singleMode) {
+                g.setStroke(Color.rgb(34, 197, 94, 0.15));
+                g.setLineWidth(6); g.stroke();
+                g.setStroke(Color.rgb(34, 197, 94, 0.8));
+                g.setLineWidth(2.5); g.stroke();
+                curveBase = Color.web("#22c55e");
+                curveEnd = Color.web("#ef4444");
+            } else {
+                Color gc = Color.rgb((int)(color.getRed()*255), (int)(color.getGreen()*255), (int)(color.getBlue()*255), 0.3);
+                g.setStroke(gc); g.setLineWidth(4); g.stroke();
+                g.setStroke(color); g.setLineWidth(2.5); g.stroke();
+                curveBase = color;
+                curveEnd = color;
+            }
 
             // 节点气泡
             boolean dense = totalCat > 10;
@@ -277,9 +296,21 @@ public class CurveView {
                 long cnt = stageCount.getOrDefault(s, 0L);
                 if (cnt == 0) continue;
 
-                double aR = color.getRed(), aG = color.getGreen(), aB = color.getBlue();
+                // 单学科模式：每个节点颜色递变（绿→黄→红）
+                Color nodeColor;
+                if (singleMode) {
+                    double ratio = s / 5.0;
+                    nodeColor = Color.rgb(
+                            (int)(34 + (239 - 34) * ratio),
+                            (int)(197 + (68 - 197) * ratio),
+                            (int)(94 + (68 - 94) * ratio));
+                } else {
+                    nodeColor = color;
+                }
+
+                double aR = nodeColor.getRed(), aG = nodeColor.getGreen(), aB = nodeColor.getBlue();
                 if (dense) {
-                    g.setFill(color);
+                    g.setFill(nodeColor);
                     g.fillOval(nx - 3, ny - 3, 6, 6);
                     g.setFill(Color.rgb(255, 255, 255, 0.7));
                     g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 11));
@@ -319,7 +350,7 @@ public class CurveView {
                 }
                 double lr = (totalCat > 0 ? lw : lb) + breathe;
                 double ly = ay + ah - ah * lr;
-                g.setFill(color);
+                g.setFill(singleMode ? Color.web("#22c55e") : color);
                 g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 13));
                 g.setTextAlign(TextAlignment.LEFT);
                 g.fillText(cat, lx, ly + 4);
