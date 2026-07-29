@@ -8,31 +8,50 @@ import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 卡片列表页：展示所有卡片，支持分类筛选、添加/编辑/删除
+ * 卡片列表页：展示所有卡片，支持搜索、分类筛选、收藏、添加/编辑/删除
  */
 public class CardListView {
 
     private final BorderPane view;
     private final ListView<FlashCard> listView;
     private final ComboBox<String> filterCombo;
+    private final TextField searchField;
+    private final ToggleButton starFilterBtn;
     private final ObservableList<FlashCard> masterList;
     private final FilteredList<FlashCard> filteredList;
     private final Button editBtn;
     private final Button deleteBtn;
 
+    private final Map<String, String> categoryColors = new LinkedHashMap<>();
+    private static final String[] CAT_PALETTE = {
+            "#3b82f6", "#ef4444", "#22c55e", "#f59e0b",
+            "#a855f7", "#ec4899", "#06b6d4", "#f97316",
+            "#14b8a6", "#8b5cf6", "#84cc16", "#f43f5e"
+    };
+
     public CardListView() {
         masterList = FXCollections.observableArrayList();
         filteredList = new FilteredList<>(masterList, p -> true);
         listView = createListView();
+
+        searchField = new TextField();
+        searchField.setPromptText("搜索卡片内容...");
+        searchField.getStyleClass().add("glass-textarea");
+        searchField.setPrefWidth(200);
+
         filterCombo = createFilterCombo();
+        starFilterBtn = new ToggleButton("⭐ 只看收藏");
+        starFilterBtn.setStyle("-fx-background-color: rgba(255,255,255,0.06); -fx-background-radius: 10; "
+                + "-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 12px; -fx-padding: 8 14; -fx-cursor: hand; "
+                + "-fx-border-color: rgba(255,255,255,0.08); -fx-border-radius: 10;");
+
         editBtn = new Button("编辑");
         deleteBtn = new Button("删除");
         styleButtons();
@@ -54,7 +73,7 @@ public class CardListView {
         Button addBtn = new Button("+ 添加卡片");
         addBtn.getStyleClass().add("btn-primary");
 
-        toolbar.getChildren().addAll(title, spacer, filterCombo, addBtn);
+        toolbar.getChildren().addAll(title, spacer, searchField, filterCombo, starFilterBtn, addBtn);
 
         // 底部操作栏
         HBox bottomBar = new HBox(10);
@@ -75,8 +94,9 @@ public class CardListView {
         editBtn.setOnAction(e -> handleEdit());
         deleteBtn.setOnAction(e -> handleDelete());
         filterCombo.setOnAction(e -> applyFilter());
+        searchField.textProperty().addListener((obs, old, val) -> applyFilter());
+        starFilterBtn.setOnAction(e -> applyFilter());
 
-        // 列表选中状态变化时切换按钮可用性
         listView.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> {
             boolean hasSel = sel != null;
             editBtn.setDisable(!hasSel);
@@ -90,13 +110,19 @@ public class CardListView {
 
     public BorderPane getView() { return view; }
 
-    /** 从数据源重新加载 */
     public void refresh() {
         List<FlashCard> cards = DataStore.loadCards();
         cards.sort(Comparator.comparing(FlashCard::getNextReviewDate));
         masterList.setAll(cards);
 
-        // 更新筛选下拉
+        int idx = 0;
+        for (String cat : cards.stream().map(FlashCard::getCategory).distinct().sorted().collect(Collectors.toList())) {
+            if (!categoryColors.containsKey(cat)) {
+                categoryColors.put(cat, CAT_PALETTE[idx % CAT_PALETTE.length]);
+                idx++;
+            }
+        }
+
         String currentFilter = filterCombo.getValue();
         filterCombo.getItems().clear();
         filterCombo.getItems().add("全部");
@@ -124,14 +150,26 @@ public class CardListView {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    HBox box = new HBox(12);
+                    HBox box = new HBox(10);
                     box.setAlignment(Pos.CENTER_LEFT);
+
+                    // 收藏星标
+                    Label starLabel = new Label(card.isStarred() ? "⭐" : "☆");
+                    starLabel.setStyle("-fx-font-size: 16px; -fx-cursor: hand; -fx-padding: 0 0 0 4;");
+                    starLabel.setOnMouseClicked(e -> toggleStar(card));
 
                     Label frontLabel = new Label(card.getFront());
                     frontLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 14px;");
 
                     Label badge = new Label(card.getCategory());
-                    badge.getStyleClass().add("category-badge");
+                    String catColor = categoryColors.getOrDefault(card.getCategory(), "#6366f1");
+                    badge.setStyle("-fx-background-color: " + catColor + "33; "
+                            + "-fx-background-radius: 6; -fx-text-fill: white; -fx-font-size: 11px; "
+                            + "-fx-padding: 2 8; -fx-border-color: " + catColor + "55; -fx-border-radius: 6;");
+
+                    String statsStr = "✓" + card.getEasyCount() + " · ?" + card.getMediumCount() + " · ✗" + card.getHardCount();
+                    Label statsLabel = new Label(statsStr);
+                    statsLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.35); -fx-font-size: 11px; -fx-padding: 0 8 0 0;");
 
                     Region spacer = new Region();
                     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -145,12 +183,25 @@ public class CardListView {
                         dueLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.4); -fx-font-size: 12px;");
                     }
 
-                    box.getChildren().addAll(frontLabel, badge, spacer, dueLabel);
+                    box.getChildren().addAll(starLabel, frontLabel, badge, statsLabel, spacer, dueLabel);
                     setGraphic(box);
                 }
             }
         });
         return lv;
+    }
+
+    private void toggleStar(FlashCard card) {
+        card.setStarred(!card.isStarred());
+        List<FlashCard> cards = DataStore.loadCards();
+        for (int i = 0; i < cards.size(); i++) {
+            if (cards.get(i).getId().equals(card.getId())) {
+                cards.set(i, card);
+                break;
+            }
+        }
+        DataStore.saveCards(cards);
+        refresh();
     }
 
     private ComboBox<String> createFilterCombo() {
@@ -167,13 +218,21 @@ public class CardListView {
 
     private void applyFilter() {
         String selected = filterCombo.getValue();
-        if (selected == null || "全部".equals(selected)) {
-            filteredList.setPredicate(p -> true);
-        } else {
-            filteredList.setPredicate(card -> card.getCategory().equals(selected));
-        }
-        // 注意：这里我们手动筛选 masterList，而不是用 filteredList 绑定
-        // 因为 listView 需要显示 filteredList 但 edit/delete 需要操作原始数据
+        String keyword = searchField.getText().toLowerCase().trim();
+        boolean onlyStarred = starFilterBtn.isSelected();
+
+        filteredList.setPredicate(card -> {
+            // 分类筛选
+            if (selected != null && !"全部".equals(selected) && !card.getCategory().equals(selected)) return false;
+            // 收藏筛选
+            if (onlyStarred && !card.isStarred()) return false;
+            // 搜索关键词
+            if (!keyword.isEmpty()) {
+                return card.getFront().toLowerCase().contains(keyword)
+                        || card.getBack().toLowerCase().contains(keyword);
+            }
+            return true;
+        });
         listView.setItems(filteredList);
     }
 

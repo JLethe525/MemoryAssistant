@@ -150,6 +150,13 @@ public class ReviewView {
         FlashCard card = cards.get(currentIndex);
         LocalDate today = LocalDate.now();
 
+        // 记录评级次数
+        switch (diff) {
+            case EASY:   card.setEasyCount(card.getEasyCount() + 1);   break;
+            case MEDIUM: card.setMediumCount(card.getMediumCount() + 1); break;
+            case HARD:   card.setHardCount(card.getHardCount() + 1);   break;
+        }
+
         SpacedRepetition.ReviewResult result = SpacedRepetition.calculate(card.getStage(), diff, today);
         card.setStage(result.newStage);
         card.setNextReviewDate(result.nextReviewDate.toString());
@@ -191,8 +198,10 @@ public class ReviewView {
         ta.setWrapText(true);
         ta.setEditable(false);
         ta.setPrefRowCount(6);
-        ta.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 18px; "
-                + "-fx-border-color: transparent; -fx-control-inner-background: transparent;");
+        ta.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 22px; "
+                + "-fx-border-color: transparent; -fx-control-inner-background: transparent; "
+                + "-fx-font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif; "
+                + "-fx-font-weight: bold; -fx-text-alignment: center;");
         return ta;
     }
 }

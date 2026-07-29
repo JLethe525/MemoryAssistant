@@ -17,6 +17,10 @@ public class FlashCard {
     private String nextReviewDate;  // 下次复习日期 (ISO: yyyy-MM-dd)
     private String lastReviewDate;  // 上次复习日期
     private String createdDate;     // 创建日期
+    private int easyCount;      // 记得次数
+    private int mediumCount;    // 模糊次数
+    private int hardCount;      // 不记得次数
+    private boolean starred;    // 是否收藏
 
     // Gson 反序列化需要无参构造
     public FlashCard() {}
@@ -31,6 +35,9 @@ public class FlashCard {
         this.nextReviewDate = today;
         this.createdDate = today;
         this.lastReviewDate = "";
+        this.easyCount = 0;
+        this.mediumCount = 0;
+        this.hardCount = 0;
     }
 
     /** 判断今天是否需要复习这张卡片 */
@@ -69,4 +76,19 @@ public class FlashCard {
 
     public String getCreatedDate() { return createdDate; }
     public void setCreatedDate(String createdDate) { this.createdDate = createdDate; }
+
+    public int getEasyCount() { return easyCount; }
+    public void setEasyCount(int easyCount) { this.easyCount = easyCount; }
+
+    public int getMediumCount() { return mediumCount; }
+    public void setMediumCount(int mediumCount) { this.mediumCount = mediumCount; }
+
+    public int getHardCount() { return hardCount; }
+    public void setHardCount(int hardCount) { this.hardCount = hardCount; }
+
+    /** 总复习次数 */
+    public int getTotalReviewCount() { return easyCount + mediumCount + hardCount; }
+
+    public boolean isStarred() { return starred; }
+    public void setStarred(boolean starred) { this.starred = starred; }
 }
