@@ -158,6 +158,7 @@ public class GraphView {
                             + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
                     alert.getDialogPane().setStyle("-fx-background-color: #111827;");
                     alert.getDialogPane().lookup(".header-panel .label").setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+                    alert.getDialogPane().lookup(".content").setStyle("-fx-text-fill: #fbbf24; -fx-font-size: 14px;");
                     alert.show();
                 }
             }
