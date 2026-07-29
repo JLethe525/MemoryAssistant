@@ -19,9 +19,9 @@
 
 .sidebar-title {
     -fx-text-fill: white;
-    -fx-font-size: 19px;
+    -fx-font-size: 22px;
     -fx-font-weight: bold;
-    -fx-padding: 0 0 20 10;
+    -fx-padding: 8 0 20 10;
 }
 
 /* 导航按钮 */
