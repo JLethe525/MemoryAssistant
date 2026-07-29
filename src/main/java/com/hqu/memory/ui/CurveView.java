@@ -245,7 +245,7 @@ public class CurveView {
             for (FlashCard c : catCards) stageCount.put(c.getStage(), stageCount.get(c.getStage()) + 1);
             long totalCat = catCards.size();
 
-            // 画曲线（渐变色）
+            // 画曲线
             g.beginPath();
             boolean firstPt = true;
             for (int px = 0; px <= aw; px++) {
@@ -258,7 +258,12 @@ public class CurveView {
                     weighted += Math.exp(-(t + SpacedRepetition.INTERVALS[s]) / lambda) * cnt / totalCat;
                 }
                 double ret = (totalCat > 0 ? weighted : base) + breathe;
-                double x = ax + px, y = ay + ah - ah * ret;
+                // 多学科时每条曲线加一个固定微偏移，避免完全重合
+                double yOffset = 0;
+                if (!singleMode && grouped.size() > 1) {
+                    yOffset = (colorIdx - 1) * 6 - (grouped.size() - 1) * 3; // 居中偏移
+                }
+                double x = ax + px, y = ay + ah - ah * ret + yOffset;
                 if (firstPt) { g.moveTo(x, y); firstPt = false; } else g.lineTo(x, y);
             }
 
