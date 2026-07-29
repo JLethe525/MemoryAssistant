@@ -29,7 +29,7 @@ public class HomeView {
         view.getStyleClass().add("glass-panel");
 
         // 顶部欢迎语
-        Label welcome = new Label("📚 考研记忆助手");
+        Label welcome = new Label("📚 学习记忆助手");
         welcome.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         // 统计数字行

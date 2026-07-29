@@ -72,7 +72,7 @@ public class MemoryApp extends Application {
         Scene scene = new Scene(root, 1000, 680);
         scene.getStylesheets().add(getClass().getResource("/styles/glass.css").toExternalForm());
 
-        stage.setTitle("考研记忆助手 - 艾宾浩斯遗忘曲线");
+        stage.setTitle("学习记忆助手 - 艾宾浩斯遗忘曲线");
         stage.setScene(scene);
         stage.setMinWidth(800);
         stage.setMinHeight(560);
