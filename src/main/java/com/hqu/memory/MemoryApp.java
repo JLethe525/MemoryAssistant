@@ -99,11 +99,12 @@ public class MemoryApp extends Application {
 
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
+        title.setPadding(new Insets(4, 0, 0, 0));
 
         // 小头像（点击可切换）
         String[] emojis = {"🧠", "🐱", "🦉", "📚", "⭐", "🌸"};
         Label logoLabel = new Label(emojis[0]);
-        logoLabel.setStyle("-fx-font-size: 20px; -fx-padding: 0 4 0 0; -fx-cursor: hand;");
+        logoLabel.setStyle("-fx-font-size: 18px; -fx-padding: 2 2 0 0; -fx-cursor: hand;");
 
         logoLabel.setOnMouseClicked(e -> {
             String current = logoLabel.getText();
@@ -117,7 +118,7 @@ public class MemoryApp extends Application {
 
         HBox logoBox = new HBox(4);
         logoBox.setAlignment(Pos.CENTER_LEFT);
-        logoBox.setPadding(new Insets(0, 0, 0, 8));
+        logoBox.setPadding(new Insets(8, 0, 0, 10));
         logoBox.getChildren().addAll(logoLabel, title);
 
         Label author = new Label("------ JLethe.");
