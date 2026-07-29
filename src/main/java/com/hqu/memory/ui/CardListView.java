@@ -73,7 +73,11 @@ public class CardListView {
         Button addBtn = new Button("+ 添加卡片");
         addBtn.getStyleClass().add("btn-primary");
 
-        toolbar.getChildren().addAll(title, spacer, searchField, filterCombo, starFilterBtn, addBtn);
+        Button scanBtn = new Button("📷 识图生成");
+        scanBtn.setStyle("-fx-background-color: #10b981; -fx-background-radius: 12; -fx-text-fill: white; "
+                + "-fx-font-size: 13px; -fx-padding: 10 18; -fx-cursor: hand; -fx-font-weight: bold;");
+
+        toolbar.getChildren().addAll(title, spacer, searchField, filterCombo, starFilterBtn, scanBtn, addBtn);
 
         // 底部操作栏
         HBox bottomBar = new HBox(10);
@@ -91,6 +95,7 @@ public class CardListView {
 
         // 事件绑定
         addBtn.setOnAction(e -> handleAdd());
+        scanBtn.setOnAction(e -> handleScan());
         editBtn.setOnAction(e -> handleEdit());
         deleteBtn.setOnAction(e -> handleDelete());
         filterCombo.setOnAction(e -> applyFilter());
@@ -154,8 +159,10 @@ public class CardListView {
                     box.setAlignment(Pos.CENTER_LEFT);
 
                     // 收藏星标
-                    Label starLabel = new Label(card.isStarred() ? "⭐" : "☆");
-                    starLabel.setStyle("-fx-font-size: 16px; -fx-cursor: hand; -fx-padding: 0 0 0 4;");
+                    Label starLabel = new Label("⭐");
+                    starLabel.setStyle(card.isStarred()
+                            ? "-fx-font-size: 17px; -fx-cursor: hand; -fx-padding: 0 0 0 4; -fx-text-fill: #fbbf24;"
+                            : "-fx-font-size: 17px; -fx-cursor: hand; -fx-padding: 0 0 0 4; -fx-text-fill: rgba(255,255,255,0.15);");
                     starLabel.setOnMouseClicked(e -> toggleStar(card));
 
                     Label frontLabel = new Label(card.getFront());
@@ -239,6 +246,17 @@ public class CardListView {
     private void handleAdd() {
         List<String> cats = masterList.stream().map(FlashCard::getCategory).distinct().collect(Collectors.toList());
         FlashCard newCard = CardFormDialog.show(null, cats);
+        if (newCard != null) {
+            List<FlashCard> cards = DataStore.loadCards();
+            cards.add(newCard);
+            DataStore.saveCards(cards);
+            refresh();
+        }
+    }
+
+    private void handleScan() {
+        List<String> cats = masterList.stream().map(FlashCard::getCategory).distinct().collect(Collectors.toList());
+        FlashCard newCard = OcrDialog.show(cats);
         if (newCard != null) {
             List<FlashCard> cards = DataStore.loadCards();
             cards.add(newCard);
