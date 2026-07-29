@@ -155,8 +155,11 @@ public class GraphView {
                     alert.setHeaderText(n.front);
                     alert.setContentText(n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
                             + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
-                    alert.getDialogPane().setPrefWidth(400);
-                    alert.getDialogPane().setStyle("-fx-background-color: #1e1b34; -fx-text-fill: white;");
+                    alert.getDialogPane().setPrefWidth(420);
+                    alert.getDialogPane().setStyle("-fx-background-color: #111827; -fx-background-radius: 16; -fx-text-fill: white;");
+                    alert.getDialogPane().setHeaderText(null);
+                    alert.getDialogPane().lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 16 20;");
+                    alert.getDialogPane().lookup(".header-panel").setStyle("-fx-background-color: transparent;");
                     alert.show();
                 }
             }
