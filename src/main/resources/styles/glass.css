@@ -1,0 +1,319 @@
+/* ===== 玻璃拟态 Glassmorphism 主题 V3 ===== */
+
+/* 全局背景：深蓝渐变（静态） */
+.root {
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #080b14 0%, #111827 50%, #0d1123 100%);
+    -fx-text-fill: white;
+}
+
+/* 侧边栏 */
+.sidebar {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-background-radius: 0 20 20 0;
+    -fx-border-color: rgba(255, 255, 255, 0.06);
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 24 12;
+    -fx-spacing: 6;
+}
+
+.sidebar-title {
+    -fx-text-fill: white;
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 10;
+}
+
+/* 导航按钮 */
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    -fx-font-size: 14px;
+    -fx-padding: 11 18;
+    -fx-border-color: transparent;
+    -fx-border-radius: 10;
+    -fx-cursor: hand;
+}
+
+.nav-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: white;
+}
+
+.nav-btn.active {
+    -fx-background-color: rgba(59, 130, 246, 0.2);
+    -fx-text-fill: white;
+    -fx-border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* 玻璃面板 */
+.glass-panel {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 18;
+    -fx-padding: 28;
+}
+
+.glass-panel-light {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 16;
+    -fx-padding: 18;
+}
+
+/* 数字统计 */
+.stat-number {
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.stat-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255, 255, 255, 0.5);
+}
+
+/* 主要按钮 */
+.btn-primary {
+    -fx-background-color: #2563eb;
+    -fx-background-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 13 32;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #3b82f6;
+}
+
+/* 评级按钮 */
+.btn-rate {
+    -fx-background-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 13 26;
+    -fx-cursor: hand;
+    -fx-min-width: 120;
+}
+
+.btn-rate-hard {
+    -fx-background-color: #dc2626;
+}
+.btn-rate-hard:hover {
+    -fx-background-color: #ef4444;
+}
+
+.btn-rate-medium {
+    -fx-background-color: #d97706;
+}
+.btn-rate-medium:hover {
+    -fx-background-color: #f59e0b;
+}
+
+.btn-rate-easy {
+    -fx-background-color: #059669;
+}
+.btn-rate-easy:hover {
+    -fx-background-color: #10b981;
+}
+
+/* 操作按钮 */
+.btn-sm {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-radius: 10;
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 13px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 10;
+}
+
+.btn-sm:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+}
+
+.btn-danger {
+    -fx-background-color: rgba(220, 38, 38, 0.12);
+    -fx-background-radius: 10;
+    -fx-text-fill: #fca5a5;
+    -fx-font-size: 13px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(220, 38, 38, 0.2);
+    -fx-border-radius: 10;
+}
+
+.btn-danger:hover {
+    -fx-background-color: rgba(220, 38, 38, 0.25);
+}
+
+/* 卡片列表 */
+.card-list {
+    -fx-background-color: transparent;
+}
+
+.card-list .list-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 12 16;
+    -fx-border-color: rgba(255, 255, 255, 0.03);
+    -fx-border-radius: 10;
+}
+
+.card-list .list-cell:filled:selected {
+    -fx-background-color: rgba(59, 130, 246, 0.2);
+    -fx-border-color: rgba(59, 130, 246, 0.3);
+}
+
+.card-list .list-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* 分类标签 */
+.category-badge {
+    -fx-background-color: rgba(59, 130, 246, 0.15);
+    -fx-background-radius: 6;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-padding: 2 8;
+    -fx-border-color: rgba(59, 130, 246, 0.25);
+    -fx-border-radius: 6;
+}
+
+/* 输入框 */
+.glass-textarea, .glass-combo {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8 12;
+}
+
+.glass-combo .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+}
+
+.glass-combo .list-view {
+    -fx-background-color: #1a1f35;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 8;
+}
+
+.glass-combo .list-view .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-padding: 8 12;
+}
+
+.glass-combo .list-view .list-cell:hover {
+    -fx-background-color: rgba(59, 130, 246, 0.2);
+}
+
+.glass-combo .list-view .list-cell:selected {
+    -fx-background-color: rgba(59, 130, 246, 0.3);
+}
+
+.glass-textarea:focused, .glass-combo:focused {
+    -fx-border-color: #3b82f6;
+}
+
+.glass-textarea .scroll-pane {
+    -fx-background-color: transparent;
+}
+.glass-textarea .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+.glass-textarea .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+
+.glass-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+.glass-combo .arrow {
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* 进度条 */
+.glass-progress {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 5;
+    -fx-min-height: 8;
+    -fx-max-height: 8;
+}
+
+.glass-progress .bar {
+    -fx-background-color: #3b82f6;
+    -fx-background-radius: 5;
+}
+
+.glass-progress .track {
+    -fx-background-color: transparent;
+}
+
+/* 复习卡片 */
+.review-card {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 22;
+    -fx-padding: 36;
+}
+
+/* 页面标题 */
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* 分割线 */
+.glass-separator {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-min-height: 1;
+    -fx-max-height: 1;
+}
+
+/* 弹窗 */
+.dialog-pane {
+    -fx-background-color: #111827;
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 18;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: transparent;
+}
+.dialog-pane .content {
+    -fx-text-fill: white;
+}
+.dialog-pane .button {
+    -fx-text-fill: white;
+}
+
+/* 滚动条 */
+.scroll-pane { -fx-background-color: transparent; }
+.scroll-pane .viewport { -fx-background-color: transparent; }
+.scroll-bar { -fx-background-color: transparent; }
+.scroll-bar .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 8;
+}
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+}
