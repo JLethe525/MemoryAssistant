@@ -3,6 +3,7 @@ package com.hqu.memory;
 import com.hqu.memory.ui.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -100,17 +101,13 @@ public class MemoryApp extends Application {
         title.getStyleClass().add("sidebar-title");
 
         // 小头像
-        javafx.scene.image.ImageView logoView = new javafx.scene.image.ImageView(
-                new javafx.scene.image.Image(getClass().getResourceAsStream("/logo.svg"))
-        );
-        logoView.setFitWidth(24);
-        logoView.setFitHeight(24);
-        logoView.setPreserveRatio(true);
+        Label logoLabel = new Label("🧠");
+        logoLabel.setStyle("-fx-font-size: 22px; -fx-padding: 0 4 0 0;");
 
-        HBox logoBox = new HBox(6);
+        HBox logoBox = new HBox(4);
         logoBox.setAlignment(Pos.CENTER_LEFT);
         logoBox.setPadding(new Insets(0, 0, 0, 8));
-        logoBox.getChildren().addAll(logoView, title);
+        logoBox.getChildren().addAll(logoLabel, title);
 
         Label author = new Label("------ JLethe.");
         author.setStyle("-fx-text-fill: rgba(255,255,255,0.2); -fx-font-size: 13px; -fx-padding: 0 0 14 10;");
