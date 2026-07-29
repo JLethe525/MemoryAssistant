@@ -21,7 +21,9 @@ public class MemoryApp extends Application {
     private ReviewView reviewView;
     private CurveView curveView;
     private StatsView statsView;
-    private Button homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn;
+    private PomodoroView pomodoroView;
+    private ForestView forestView;
+    private Button homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn, pomoBtn, forestBtn;
 
     @Override
     public void start(Stage stage) {
@@ -30,6 +32,8 @@ public class MemoryApp extends Application {
         reviewView = new ReviewView();
         curveView = new CurveView();
         statsView = new StatsView();
+        pomodoroView = new PomodoroView();
+        forestView = new ForestView();
 
         homeView.setOnStartReview(() -> {
             reviewView.startReview();
@@ -42,7 +46,9 @@ public class MemoryApp extends Application {
                 cardListView.getView(),
                 reviewView.getView(),
                 curveView.getView(),
-                statsView.getView()
+                statsView.getView(),
+                pomodoroView.getView(),
+                forestView.getView()
         );
         contentArea.setPadding(new Insets(24));
 
@@ -76,10 +82,20 @@ public class MemoryApp extends Application {
         homeBtn = createNavBtn("🏠  首页");
         cardBtn = createNavBtn("📝  卡片管理");
         reviewBtn = createNavBtn("🔄  开始复习");
+
+        Label focusTitle = new Label("专注与成长");
+        focusTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
+
+        pomoBtn = createNavBtn("🍅  番茄钟");
+        forestBtn = createNavBtn("🌳  记忆森林");
+
+        Label chartTitle = new Label("数据分析");
+        chartTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
+
         curveBtn = createNavBtn("📈  遗忘曲线");
         statsBtn = createNavBtn("📊  学习统计");
 
-        Label importTitle = new Label("导入功能");
+        Label importTitle = new Label("导入工具");
         importTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
 
         Button fileImportBtn = createNavBtn("📄  识文件");
@@ -103,12 +119,21 @@ public class MemoryApp extends Application {
         homeBtn.setOnAction(e -> { homeView.refresh(); showView(homeView.getView()); setActiveNav(homeBtn); });
         cardBtn.setOnAction(e -> { cardListView.refresh(); showView(cardListView.getView()); setActiveNav(cardBtn); });
         reviewBtn.setOnAction(e -> { reviewView.startReview(); showView(reviewView.getView()); setActiveNav(reviewBtn); });
+        pomoBtn.setOnAction(e -> { pomodoroView.refresh(); showView(pomodoroView.getView()); setActiveNav(pomoBtn); });
+        forestBtn.setOnAction(e -> { forestView.refresh(); showView(forestView.getView()); setActiveNav(forestBtn); });
         curveBtn.setOnAction(e -> { curveView.refresh(); showView(curveView.getView()); setActiveNav(curveBtn); });
         statsBtn.setOnAction(e -> { statsView.refresh(); showView(statsView.getView()); setActiveNav(statsBtn); });
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
-        sidebar.getChildren().addAll(title, homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn, importTitle, fileImportBtn, imgImportBtn, spacer);
+        sidebar.getChildren().addAll(
+                title,
+                homeBtn, cardBtn, reviewBtn,
+                focusTitle, pomoBtn, forestBtn,
+                chartTitle, curveBtn, statsBtn,
+                importTitle, fileImportBtn, imgImportBtn,
+                spacer
+        );
         return sidebar;
     }
 
@@ -126,7 +151,7 @@ public class MemoryApp extends Application {
     }
 
     private void setActiveNav(Button active) {
-        for (Button btn : new Button[]{homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn})
+        for (Button btn : new Button[]{homeBtn, cardBtn, reviewBtn, pomoBtn, forestBtn, curveBtn, statsBtn})
             btn.getStyleClass().remove("active");
         active.getStyleClass().add("active");
     }
