@@ -46,6 +46,7 @@ public class GraphView {
     }
 
     private double scale = 1.0;
+    private double spreadFactor = 1.0;
     private double offsetX = 0, offsetY = 0;
     private double lastMouseX, lastMouseY;
     private boolean dragging = false;
@@ -124,7 +125,7 @@ public class GraphView {
             draw();
         });
 
-        // 滚轮缩放（速度加快）
+        // 滚轮缩放（速度加快，缩放同时触发力展开）
         canvas.setOnScroll(e -> {
             double delta = 1 + e.getDeltaY() * 0.002;
             double newScale = scale * delta;
@@ -135,6 +136,9 @@ public class GraphView {
             offsetX = mx - (mx - offsetX) * (newScale / scale);
             offsetY = my - (my - offsetY) * (newScale / scale);
             scale = newScale;
+            // 缩放越大节点展开越开
+            spreadFactor = scale;
+            applyForceLayout();
             draw();
         });
 
@@ -167,6 +171,61 @@ public class GraphView {
         buildGraph();
     }
 
+    /** 重新应用力导向展开（缩放时调用） */
+    private void applyForceLayout() {
+        if (nodes.isEmpty()) return;
+        double W = canvas.getWidth();
+        double H = canvas.getHeight();
+        if (W < 100) { W = 860; H = 440; }
+
+        final double SPRING = 0.01;
+        final double REPULSION = 500;
+        final double ATTRACTION = 0.005;
+        double baseRadius = Math.min(W, H) * (0.25 + 0.15 * spreadFactor);
+
+        // 更新分类中心位置
+        Map<String, Integer> catIdxMap = new HashMap<>();
+        List<String> cats = nodes.stream().map(n -> n.category).distinct().sorted().collect(Collectors.toList());
+        for (int i = 0; i < cats.size(); i++) catIdxMap.put(cats.get(i), i);
+
+        double[][] positions = new double[nodes.size()][2];
+        for (int i = 0; i < nodes.size(); i++) {
+            positions[i][0] = nodes.get(i).x;
+            positions[i][1] = nodes.get(i).y;
+        }
+
+        for (int iter = 0; iter < 30; iter++) {
+            double[][] forces = new double[nodes.size()][2];
+            for (int i = 0; i < nodes.size(); i++) {
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    double dx = positions[j][0] - positions[i][0];
+                    double dy = positions[j][1] - positions[i][1];
+                    double dist = Math.sqrt(dx * dx + dy * dy) + 1;
+                    double rf = REPULSION * spreadFactor / (dist * dist);
+                    double fx = rf * dx / dist, fy = rf * dy / dist;
+                    forces[i][0] -= fx; forces[i][1] -= fy;
+                    forces[j][0] += fx; forces[j][1] += fy;
+                }
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    if (!nodes.get(i).category.equals(nodes.get(j).category)) continue;
+                    double dx = positions[j][0] - positions[i][0];
+                    double dy = positions[j][1] - positions[i][1];
+                    forces[i][0] += dx * ATTRACTION; forces[i][1] += dy * ATTRACTION;
+                    forces[j][0] -= dx * ATTRACTION; forces[j][1] -= dy * ATTRACTION;
+                }
+            }
+            for (int i = 0; i < nodes.size(); i++) {
+                positions[i][0] += forces[i][0];
+                positions[i][1] += forces[i][1];
+            }
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            nodes.get(i).x = positions[i][0];
+            nodes.get(i).y = positions[i][1];
+        }
+    }
+
     private void buildGraph() {
         List<FlashCard> cards = DataStore.loadCards();
         if (cards == null || cards.isEmpty()) {
@@ -190,6 +249,8 @@ public class GraphView {
         final double SPRING = 0.01;
         final double REPULSION = 500;
         final double ATTRACTION = 0.005;
+        // 初始展开半径随 spreadFactor 增大
+        double baseRadius = Math.min(W, H) * (0.25 + 0.15 * spreadFactor);
 
         // 初始化位置：按分类分散在圆形上
         double[][] positions = new double[cards.size()][2];
@@ -202,10 +263,10 @@ public class GraphView {
             List<FlashCard> catCards = entry.getValue();
             int ci = catIndexMap.get(cat);
             double angle = 2 * Math.PI * ci / totalCats;
-            double cx = W / 2 + Math.cos(angle) * (Math.min(W, H) * 0.3);
-            double cy = H / 2 + Math.sin(angle) * (Math.min(W, H) * 0.3);
+            double cx = W / 2 + Math.cos(angle) * baseRadius;
+            double cy = H / 2 + Math.sin(angle) * baseRadius;
 
-            double spread = Math.min(catCards.size(), 20) * 12;
+            double spread = Math.min(catCards.size(), 20) * (10 + 8 * spreadFactor);
 
             for (int j = 0; j < catCards.size(); j++) {
                 FlashCard c = catCards.get(j);
@@ -226,7 +287,7 @@ public class GraphView {
             }
         }
 
-        // 力导向迭代（使节点分散开）
+        // 力导向迭代（使节点分散开，spreadFactor 控制展开程度）
         for (int iter = 0; iter < 100; iter++) {
             double[][] forces = new double[tempNodes.size()][2];
             for (int i = 0; i < tempNodes.size(); i++) {
@@ -234,7 +295,7 @@ public class GraphView {
                     double dx = positions[j][0] - positions[i][0];
                     double dy = positions[j][1] - positions[i][1];
                     double dist = Math.sqrt(dx * dx + dy * dy) + 1;
-                    double repulsiveForce = REPULSION / (dist * dist);
+                    double repulsiveForce = REPULSION * spreadFactor / (dist * dist);
                     double fx = repulsiveForce * dx / dist;
                     double fy = repulsiveForce * dy / dist;
                     forces[i][0] -= fx;
