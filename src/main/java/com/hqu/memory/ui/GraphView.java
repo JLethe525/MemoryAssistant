@@ -183,30 +183,35 @@ public class GraphView {
         if (W < 100) W = 860;
         if (H < 100) H = 440;
 
-        // 力导向布局简化版：按分类分组，同分类靠近
         Map<String, List<FlashCard>> grouped = cards.stream().collect(Collectors.groupingBy(FlashCard::getCategory));
         int totalCats = grouped.size();
         List<NodeData> newNodes = new ArrayList<>();
-        Random rnd = new Random(42);
 
-        int[] idxInCat = new int[totalCats];
+        final double SPRING = 0.01;
+        final double REPULSION = 500;
+        final double ATTRACTION = 0.005;
+
+        // 初始化位置：按分类分散在圆形上
+        double[][] positions = new double[cards.size()][2];
+        List<NodeData> tempNodes = new ArrayList<>();
+        int idx = 0;
+        int[] catIdxTracker = new int[totalCats];
+
         for (var entry : grouped.entrySet()) {
             String cat = entry.getKey();
             List<FlashCard> catCards = entry.getValue();
             int ci = catIndexMap.get(cat);
-
-            // 该分类的中心位置（均匀分布在圆形上）
             double angle = 2 * Math.PI * ci / totalCats;
-            double cx = W / 2 + Math.cos(angle) * (Math.min(W, H) * 0.25);
-            double cy = H / 2 + Math.sin(angle) * (Math.min(W, H) * 0.25);
+            double cx = W / 2 + Math.cos(angle) * (Math.min(W, H) * 0.3);
+            double cy = H / 2 + Math.sin(angle) * (Math.min(W, H) * 0.3);
+
+            double spread = Math.min(catCards.size(), 20) * 12;
 
             for (int j = 0; j < catCards.size(); j++) {
                 FlashCard c = catCards.get(j);
                 NodeData nd = new NodeData();
-                // 分类内微偏移
-                double spread = Math.min(catCards.size(), 15) * 8;
-                nd.x = cx + (rnd.nextDouble() - 0.5) * spread;
-                nd.y = cy + (rnd.nextDouble() - 0.5) * spread;
+                nd.x = cx + (Math.random() - 0.5) * spread;
+                nd.y = cy + (Math.random() - 0.5) * spread;
                 nd.radius = 12 + c.getStage() * 3;
                 nd.label = c.getFront().length() > 10 ? c.getFront().substring(0, 10) + ".." : c.getFront();
                 nd.category = cat;
@@ -214,10 +219,56 @@ public class GraphView {
                 nd.front = c.getFront();
                 nd.back = c.getBack();
                 nd.catIndex = ci;
-                newNodes.add(nd);
+                tempNodes.add(nd);
+                positions[idx][0] = nd.x;
+                positions[idx][1] = nd.y;
+                idx++;
             }
         }
-        nodes = newNodes;
+
+        // 力导向迭代（使节点分散开）
+        for (int iter = 0; iter < 100; iter++) {
+            double[][] forces = new double[tempNodes.size()][2];
+            for (int i = 0; i < tempNodes.size(); i++) {
+                for (int j = i + 1; j < tempNodes.size(); j++) {
+                    double dx = positions[j][0] - positions[i][0];
+                    double dy = positions[j][1] - positions[i][1];
+                    double dist = Math.sqrt(dx * dx + dy * dy) + 1;
+                    double repulsiveForce = REPULSION / (dist * dist);
+                    double fx = repulsiveForce * dx / dist;
+                    double fy = repulsiveForce * dy / dist;
+                    forces[i][0] -= fx;
+                    forces[i][1] -= fy;
+                    forces[j][0] += fx;
+                    forces[j][1] += fy;
+                }
+                // 同分类吸引力（保持分组不散）
+                for (int j = i + 1; j < tempNodes.size(); j++) {
+                    if (!tempNodes.get(i).category.equals(tempNodes.get(j).category)) continue;
+                    double dx = positions[j][0] - positions[i][0];
+                    double dy = positions[j][1] - positions[i][1];
+                    forces[i][0] += dx * ATTRACTION;
+                    forces[i][1] += dy * ATTRACTION;
+                    forces[j][0] -= dx * ATTRACTION;
+                    forces[j][1] -= dy * ATTRACTION;
+                }
+            }
+            double maxForce = 0;
+            for (int i = 0; i < tempNodes.size(); i++) {
+                positions[i][0] += forces[i][0];
+                positions[i][1] += forces[i][1];
+                double f = Math.sqrt(forces[i][0]*forces[i][0] + forces[i][1]*forces[i][1]);
+                if (f > maxForce) maxForce = f;
+            }
+            if (maxForce < 1) break;
+        }
+
+        // 更新节点坐标
+        for (int i = 0; i < tempNodes.size(); i++) {
+            tempNodes.get(i).x = positions[i][0];
+            tempNodes.get(i).y = positions[i][1];
+        }
+        nodes = tempNodes;
     }
 
     private int findNode(double mx, double my) {
