@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
@@ -125,9 +126,9 @@ public class GraphView {
             draw();
         });
 
-        // 滚轮缩放（速度加快，缩放同时触发力展开）
+        // 滚轮缩放（缩放同时触发力展开）
         canvas.setOnScroll(e -> {
-            double delta = 1 + e.getDeltaY() * 0.002;
+            double delta = 1 + e.getDeltaY() * 0.003;
             double newScale = scale * delta;
             if (newScale < 0.3) newScale = 0.3;
             if (newScale > 3.0) newScale = 3.0;
@@ -136,10 +137,29 @@ public class GraphView {
             offsetX = mx - (mx - offsetX) * (newScale / scale);
             offsetY = my - (my - offsetY) * (newScale / scale);
             scale = newScale;
-            // 缩放越大节点展开越开
-            spreadFactor = scale;
+            spreadFactor = scale * 2;
             applyForceLayout();
             draw();
+        });
+
+        // 双击球查看完整信息
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            if (e.getClickCount() == 2) {
+                double mx = (e.getX() - offsetX) / scale;
+                double my = (e.getY() - offsetY) / scale;
+                int idx = findNode(mx, my);
+                if (idx >= 0) {
+                    NodeData n = nodes.get(idx);
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("📌 卡片详情");
+                    alert.setHeaderText(n.front);
+                    alert.setContentText(n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
+                            + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
+                    alert.getDialogPane().setPrefWidth(400);
+                    alert.getDialogPane().setStyle("-fx-background-color: #1e1b34; -fx-text-fill: white;");
+                    alert.show();
+                }
+            }
         });
 
         // 鼠标拖拽平移
@@ -179,9 +199,9 @@ public class GraphView {
         if (W < 100) { W = 860; H = 440; }
 
         final double SPRING = 0.01;
-        final double REPULSION = 500;
-        final double ATTRACTION = 0.005;
-        double baseRadius = Math.min(W, H) * (0.25 + 0.15 * spreadFactor);
+        final double REPULSION = 800;
+        final double ATTRACTION = 0.003;
+        double baseRadius = Math.min(W, H) * (0.3 + 0.2 * spreadFactor);
 
         // 更新分类中心位置
         Map<String, Integer> catIdxMap = new HashMap<>();
@@ -247,10 +267,10 @@ public class GraphView {
         List<NodeData> newNodes = new ArrayList<>();
 
         final double SPRING = 0.01;
-        final double REPULSION = 500;
-        final double ATTRACTION = 0.005;
+        final double REPULSION = 800;
+        final double ATTRACTION = 0.003;
         // 初始展开半径随 spreadFactor 增大
-        double baseRadius = Math.min(W, H) * (0.25 + 0.15 * spreadFactor);
+        double baseRadius = Math.min(W, H) * (0.3 + 0.2 * spreadFactor);
 
         // 初始化位置：按分类分散在圆形上
         double[][] positions = new double[cards.size()][2];
@@ -266,7 +286,7 @@ public class GraphView {
             double cx = W / 2 + Math.cos(angle) * baseRadius;
             double cy = H / 2 + Math.sin(angle) * baseRadius;
 
-            double spread = Math.min(catCards.size(), 20) * (10 + 8 * spreadFactor);
+            double spread = Math.min(catCards.size(), 20) * (12 + 12 * spreadFactor);
 
             for (int j = 0; j < catCards.size(); j++) {
                 FlashCard c = catCards.get(j);
