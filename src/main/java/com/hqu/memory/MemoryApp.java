@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
@@ -58,11 +59,11 @@ public class MemoryApp extends Application {
         );
         contentArea.setPadding(new Insets(24));
 
-        VBox sidebar = createSidebar();
-        sidebar.setPrefWidth(180);
+        ScrollPane sidebarScroll = createSidebar();
+        sidebarScroll.setPrefWidth(180);
 
         BorderPane root = new BorderPane();
-        root.setLeft(sidebar);
+        root.setLeft(sidebarScroll);
         root.setCenter(contentArea);
 
         showView(homeView.getView());
@@ -78,7 +79,7 @@ public class MemoryApp extends Application {
         stage.show();
     }
 
-    private VBox createSidebar() {
+    private ScrollPane createSidebar() {
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(180);
@@ -88,6 +89,7 @@ public class MemoryApp extends Application {
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        scrollPane.setPrefWidth(180);
 
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
@@ -155,7 +157,7 @@ public class MemoryApp extends Application {
         );
 
         root.setLeft(scrollPane);
-        return sidebar;
+        return scrollPane;
     }
 
     private Button createNavBtn(String text) {
