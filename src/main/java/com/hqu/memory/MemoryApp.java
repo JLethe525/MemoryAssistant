@@ -97,28 +97,28 @@ public class MemoryApp extends Application {
             scrollPane.setVvalue(scrollPane.getVvalue() - deltaY / scrollPane.getContent().getBoundsInLocal().getHeight());
         });
 
-        Label title = new Label("记忆助手");
-        title.getStyleClass().add("sidebar-title");
-        title.setPadding(new Insets(4, 0, 0, 0));
-
-        // 小头像（点击可切换）
-        String[] emojis = {"🧠", "🐱", "🦉", "📚", "⭐", "🌸"};
-        Label logoLabel = new Label(emojis[0]);
-        logoLabel.setStyle("-fx-font-size: 18px; -fx-padding: 2 2 0 0; -fx-cursor: hand;");
+        // 小头像（点击可切换，用文字代替emoji解决方块问题）
+        String[] icons = {"[*]", "[@]", "[~]", "[$]", "[+]", "[?]"};
+        Label logoLabel = new Label("[*]");
+        logoLabel.setStyle("-fx-text-fill: #fbbf24; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 2 0 2; -fx-cursor: hand;");
 
         logoLabel.setOnMouseClicked(e -> {
             String current = logoLabel.getText();
-            for (int i = 0; i < emojis.length; i++) {
-                if (emojis[i].equals(current)) {
-                    logoLabel.setText(emojis[(i + 1) % emojis.length]);
+            for (int i = 0; i < icons.length; i++) {
+                if (icons[i].equals(current)) {
+                    logoLabel.setText(icons[(i + 1) % icons.length]);
                     break;
                 }
             }
         });
 
-        HBox logoBox = new HBox(4);
+        Label title = new Label("记忆助手");
+        title.getStyleClass().add("sidebar-title");
+        title.setPadding(new Insets(0, 0, 0, 0));
+
+        HBox logoBox = new HBox(0);
         logoBox.setAlignment(Pos.CENTER_LEFT);
-        logoBox.setPadding(new Insets(8, 0, 0, 10));
+        logoBox.setPadding(new Insets(0, 0, 0, 8));
         logoBox.getChildren().addAll(logoLabel, title);
 
         Label author = new Label("------ JLethe.");
