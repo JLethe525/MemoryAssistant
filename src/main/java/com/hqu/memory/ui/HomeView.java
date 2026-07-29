@@ -64,6 +64,16 @@ public class HomeView {
         btnBox.setAlignment(Pos.CENTER);
         btnBox.setPadding(new Insets(20, 0, 0, 0));
 
+        // 作者签名
+        Label signature = new Label("------ JLethe.");
+        signature.setStyle("-fx-text-fill: rgba(255,255,255,0.15); -fx-font-size: 11px; -fx-padding: 4 0 0 0;");
+        HBox sigBox = new HBox(signature);
+        sigBox.setAlignment(Pos.CENTER);
+
+        VBox bottomBox = new VBox(0);
+        bottomBox.setAlignment(Pos.CENTER);
+        bottomBox.getChildren().addAll(btnBox, sigBox);
+
         VBox topSection = new VBox(8);
         topSection.setAlignment(Pos.CENTER);
         topSection.getChildren().addAll(welcome, statsRow);
@@ -75,7 +85,7 @@ public class HomeView {
 
         view.setTop(topSection);
         view.setCenter(scrollPane);
-        view.setBottom(btnBox);
+        view.setBottom(bottomBox);
     }
 
     public BorderPane getView() { return view; }
