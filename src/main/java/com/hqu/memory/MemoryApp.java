@@ -97,29 +97,13 @@ public class MemoryApp extends Application {
             scrollPane.setVvalue(scrollPane.getVvalue() - deltaY / scrollPane.getContent().getBoundsInLocal().getHeight());
         });
 
-        // 小头像（点击可切换，用文字代替emoji解决方块问题）
-        String[] icons = {"[*]", "[@]", "[~]", "[$]", "[+]", "[?]"};
-        Label logoLabel = new Label("[*]");
-        logoLabel.setStyle("-fx-text-fill: #fbbf24; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 2 0 2; -fx-cursor: hand;");
-
-        logoLabel.setOnMouseClicked(e -> {
-            String current = logoLabel.getText();
-            for (int i = 0; i < icons.length; i++) {
-                if (icons[i].equals(current)) {
-                    logoLabel.setText(icons[(i + 1) % icons.length]);
-                    break;
-                }
-            }
-        });
-
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
-        title.setPadding(new Insets(0, 0, 0, 0));
 
         HBox logoBox = new HBox(0);
         logoBox.setAlignment(Pos.CENTER_LEFT);
         logoBox.setPadding(new Insets(0, 0, 0, 8));
-        logoBox.getChildren().addAll(logoLabel, title);
+        logoBox.getChildren().addAll(title);
 
         Label author = new Label("------ JLethe.");
         author.setStyle("-fx-text-fill: rgba(255,255,255,0.2); -fx-font-size: 13px; -fx-padding: 0 0 14 10;");
