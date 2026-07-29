@@ -256,10 +256,10 @@ public class CardListView {
 
     private void handleScan() {
         List<String> cats = masterList.stream().map(FlashCard::getCategory).distinct().collect(Collectors.toList());
-        FlashCard newCard = OcrDialog.show(cats);
-        if (newCard != null) {
+        List<FlashCard> newCards = OcrDialog.show(cats);
+        if (newCards != null && !newCards.isEmpty()) {
             List<FlashCard> cards = DataStore.loadCards();
-            cards.add(newCard);
+            cards.addAll(newCards);
             DataStore.saveCards(cards);
             refresh();
         }
