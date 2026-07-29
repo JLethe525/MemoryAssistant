@@ -90,6 +90,11 @@ public class MemoryApp extends Application {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         scrollPane.setPrefWidth(180);
+        // 加速滚动
+        scrollPane.getContent().setOnScroll(e -> {
+            double deltaY = e.getDeltaY() * 3;
+            scrollPane.setVvalue(scrollPane.getVvalue() - deltaY / scrollPane.getContent().getBoundsInLocal().getHeight());
+        });
 
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
