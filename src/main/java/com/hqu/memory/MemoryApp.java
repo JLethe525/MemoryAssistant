@@ -100,7 +100,7 @@ public class MemoryApp extends Application {
         title.getStyleClass().add("sidebar-title");
 
         Label author = new Label("------ JLethe.");
-        author.setStyle("-fx-text-fill: rgba(255,255,255,0.15); -fx-font-size: 11px; -fx-padding: 0 0 12 10;");
+        author.setStyle("-fx-text-fill: rgba(255,255,255,0.2); -fx-font-size: 13px; -fx-padding: 0 0 14 10;");
 
         homeBtn = createNavBtn("🏠  首页");
         cardBtn = createNavBtn("📝  卡片管理");
