@@ -33,6 +33,7 @@ public class ForestView {
     private final Label titleLabel;
     private final Label statsLabel;
     private final Label clickHint;
+    private final Label treeInfoLabel;
     private double time = 0;
 
     private static final Preferences PREFS = Preferences.userNodeForPackage(ForestView.class);
@@ -43,7 +44,6 @@ public class ForestView {
     private int treeCount = 0;
     private int hoveredIdx = -1;
     private int clickedIdx = -1;
-    private Tooltip activeTip = null;
 
     public ForestView() {
         view = new BorderPane();
@@ -68,15 +68,20 @@ public class ForestView {
         VBox.setVgrow(canvasBox, Priority.ALWAYS);
 
         // 底部提示
-        clickHint = new Label("💡 点击树木查看数据  ·  复习卡片为树木浇水  ·  番茄钟长出新树");
-        clickHint.setStyle("-fx-text-fill: rgba(255,255,255,0.25); -fx-font-size: 12px;");
-        HBox hintBox = new HBox(clickHint);
-        hintBox.setAlignment(Pos.CENTER);
-        hintBox.setPadding(new Insets(12, 0, 0, 0));
+        treeInfoLabel = new Label("💡 点击树木查看详情");
+        treeInfoLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.25); -fx-font-size: 12px;");
+
+        clickHint = new Label("📝 复习为树木浇水  ·  🍅 番茄钟长出新树");
+        clickHint.setStyle("-fx-text-fill: rgba(255,255,255,0.2); -fx-font-size: 11px;");
+
+        VBox bottomBox = new VBox(2);
+        bottomBox.setAlignment(Pos.CENTER);
+        bottomBox.setPadding(new Insets(12, 0, 0, 0));
+        bottomBox.getChildren().addAll(treeInfoLabel, clickHint);
 
         view.setTop(header);
         view.setCenter(canvasBox);
-        view.setBottom(hintBox);
+        view.setBottom(bottomBox);
 
         // 交互：鼠标移动检测悬停
         canvas.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
@@ -86,32 +91,22 @@ public class ForestView {
             updateCursor();
         });
 
-        // 点击弹提示（点击同一棵树切换显示/隐藏）
+        // 点击树显示信息在底部 label，点击同一棵树或空白区域取消
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             int idx = findTreeAt(e.getX(), e.getY());
             if (idx >= 0 && idx < treeCount) {
                 if (clickedIdx == idx) {
-                    // 再次点击同一棵树 -> 隐藏
                     clickedIdx = -1;
-                    Tooltip.uninstall(canvas, activeTip);
-                    activeTip = null;
+                    treeInfoLabel.setText("💡 点击树木查看详情");
                 } else {
                     clickedIdx = idx;
-                    if (activeTip != null) Tooltip.uninstall(canvas, activeTip);
-                    Tooltip tip = new Tooltip(treeLabel[idx]);
-                    tip.setStyle("-fx-background-color: #1e1b34; -fx-text-fill: white; -fx-font-size: 12px; "
-                            + "-fx-background-radius: 10; -fx-padding: 8 14; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;");
-                    Tooltip.install(canvas, tip);
-                    tip.show(canvas, e.getScreenX(), e.getScreenY() - 30);
-                    activeTip = tip;
+                    treeInfoLabel.setText("🌲 " + treeLabel[idx]);
+                    treeInfoLabel.setStyle("-fx-text-fill: rgba(255,255,200,0.6); -fx-font-size: 12px;");
                 }
             } else {
-                // 点击空白区域 -> 隐藏
                 clickedIdx = -1;
-                if (activeTip != null) {
-                    Tooltip.uninstall(canvas, activeTip);
-                    activeTip = null;
-                }
+                treeInfoLabel.setText("💡 点击树木查看详情");
+                treeInfoLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.25); -fx-font-size: 12px;");
             }
         });
 
