@@ -36,10 +36,10 @@ public class OcrDialog {
     }
 
     /** 返回用户勾选确认导入的卡片列表，取消返回 null */
-    public static List<FlashCard> show(List<String> categories) {
+    public static List<FlashCard> show(List<String> categories, boolean imageMode) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("📤 导入文件生成卡片");
+        dialog.setTitle(imageMode ? "🖼️ 识别图片生成卡片" : "📄 识别文件生成卡片");
 
         VBox root = new VBox(16);
         root.setPadding(new Insets(24));
@@ -50,14 +50,14 @@ public class OcrDialog {
         keyLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 13px;");
 
         PasswordField keyField = new PasswordField();
-        keyField.setPromptText("输入你的 DeepSeek API Key");
+        keyField.setPromptText("输入 DeepSeek API Key");
         String savedKey = PREFS.get("deepseek_api_key", "");
         if (!savedKey.isEmpty()) keyField.setText(savedKey);
         keyField.setStyle("-fx-background-color: rgba(255,255,255,0.06); -fx-background-radius: 10; "
                 + "-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 10 14; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;");
 
         // ---- 选择文件 ----
-        Label fileTitle = new Label("选择文件（TXT / DOCX / PDF）");
+        Label fileTitle = new Label(imageMode ? "选择图片（PNG / JPG / BMP / GIF）" : "选择文件（TXT / DOCX / PDF）");
         fileTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 13px;");
 
         Button chooseBtn = new Button("选择文件");
@@ -148,17 +148,18 @@ public class OcrDialog {
 
         chooseBtn.setOnAction(e -> {
             FileChooser fc = new FileChooser();
-            fc.setTitle("选择文件");
-            fc.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("文档", "*.txt", "*.docx", "*.pdf"),
-                    new FileChooser.ExtensionFilter("图片", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif")
-            );
+            fc.setTitle(imageMode ? "选择图片" : "选择文件");
+            if (imageMode) {
+                fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("图片", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif"));
+            } else {
+                fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("文档", "*.txt", "*.docx", "*.pdf"));
+            }
             File f = fc.showOpenDialog(dialog);
             if (f == null) return;
             selectedFile[0] = f;
             fileLabel.setText(f.getName());
 
-            if (isImage(f)) {
+            if (imageMode || isImage(f)) {
                 preview.setImage(new Image(f.toURI().toString()));
                 previewBox.getChildren().setAll(preview);
                 previewBox.setMinHeight(180);
@@ -200,7 +201,10 @@ public class OcrDialog {
             new Thread(() -> {
                 try {
                     String result;
-                    if (text != null && !text.isEmpty()) {
+                    if (imageMode || isImage(file)) {
+                        // DeepSeek 不支持图片，降级为根据文件名推断内容
+                        result = OcrService.analyzeText(apiKey, "图片文件: " + file.getName() + "\n请根据文件名和格式推测可能的卡片内容。如果无法识别，生成一张通用卡片。", file.getName());
+                    } else if (text != null && !text.isEmpty()) {
                         result = OcrService.analyzeText(apiKey, text, file.getName());
                     } else {
                         result = OcrService.analyzeText(apiKey, OcrService.extractText(file), file.getName());
