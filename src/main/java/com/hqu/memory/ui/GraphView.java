@@ -124,41 +124,12 @@ public class GraphView {
             draw();
         });
 
-        // 滚轮缩放
+        // 滚轮缩放（速度加快）
         canvas.setOnScroll(e -> {
-            double delta = 1 + e.getDeltaY() * 0.001;
+            double delta = 1 + e.getDeltaY() * 0.002;
             double newScale = scale * delta;
             if (newScale < 0.3) newScale = 0.3;
             if (newScale > 3.0) newScale = 3.0;
-            double mx = e.getX();
-            double my = e.getY();
-            offsetX = mx - (mx - offsetX) * (newScale / scale);
-            offsetY = my - (my - offsetY) * (newScale / scale);
-            scale = newScale;
-            draw();
-        });
-
-        // 鼠标拖拽
-        canvas.setOnMousePressed(e -> { lastMouseX = e.getX(); lastMouseY = e.getY(); dragging = true; });
-        canvas.setOnMouseDragged(e -> {
-            if (!dragging) return;
-            offsetX += e.getX() - lastMouseX;
-            offsetY += e.getY() - lastMouseY;
-            lastMouseX = e.getX();
-            lastMouseY = e.getY();
-            draw();
-        });
-        canvas.setOnMouseReleased(e -> dragging = false);
-
-        // 呼吸动画
-
-        // 滚轮缩放
-        canvas.setOnScroll(e -> {
-            double delta = 1 + e.getDeltaY() * 0.001;
-            double newScale = scale * delta;
-            if (newScale < 0.3) newScale = 0.3;
-            if (newScale > 3.0) newScale = 3.0;
-            // 以鼠标位置为中心缩放
             double mx = e.getX();
             double my = e.getY();
             offsetX = mx - (mx - offsetX) * (newScale / scale);
