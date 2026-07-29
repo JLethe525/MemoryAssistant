@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2d1b69"/>
+      <stop offset="100%" stop-color="#1a1040"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 圆角背景 -->
+  <rect x="20" y="20" width="472" height="472" rx="100" ry="100" fill="url(#bg)"/>
+
+  <!-- 身体/衣服 -->
+  <ellipse cx="256" cy="380" rx="100" ry="70" fill="#6366f1"/>
+  <ellipse cx="256" cy="380" rx="80" ry="55" fill="#818cf8"/>
+
+  <!-- 身体上小领结 -->
+  <polygon points="256,340 240,360 256,355 272,360" fill="#fbbf24"/>
+
+  <!-- 头 -->
+  <circle cx="256" cy="220" r="100" fill="#fde68a"/>
+
+  <!-- 头发 -->
+  <ellipse cx="256" cy="185" rx="105" ry="70" fill="url(#hairGrad)"/>
+  <!-- 刘海 -->
+  <path d="M160 200 Q200 170 230 185 Q240 175 256 180 Q270 170 280 185 Q310 170 350 200" fill="#2d1b69"/>
+  <!-- 脸颊毛 -->
+  <ellipse cx="170" cy="230" rx="30" ry="25" fill="#2d1b69"/>
+
+  <!-- 眼睛 -->
+  <ellipse cx="218" cy="220" rx="18" ry="22" fill="white"/>
+  <ellipse cx="294" cy="220" rx="18" ry="22" fill="white"/>
+  <ellipse cx="222" cy="220" rx="10" ry="14" fill="#1a1040"/>
+  <ellipse cx="290" cy="220" rx="10" ry="14" fill="#1a1040"/>
+  <!-- 眼睛高光 -->
+  <circle cx="226" cy="214" r="4" fill="white"/>
+  <circle cx="294" cy="214" r="4" fill="white"/>
+
+  <!-- 脸颊红晕 -->
+  <ellipse cx="200" cy="245" rx="16" ry="8" fill="#fca5a5" opacity="0.4"/>
+  <ellipse cx="312" cy="245" rx="16" ry="8" fill="#fca5a5" opacity="0.4"/>
+
+  <!-- 嘴巴（微笑） -->
+  <path d="M240 250 Q256 268 272 250" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- 左手臂 -->
+  <path d="M170 350 Q140 330 130 360 Q125 375 140 380" stroke="#fde68a" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <!-- 右手臂（拿书） -->
+  <path d="M342 350 Q370 320 380 340 Q385 360 370 370" stroke="#fde68a" stroke-width="20" fill="none" stroke-linecap="round"/>
+
+  <!-- 书 -->
+  <rect x="360" y="340" width="40" height="55" rx="3" fill="white" transform="rotate(15, 380, 370)"/>
+  <rect x="398" y="336" width="40" height="55" rx="3" fill="#e5e7eb" transform="rotate(15, 398, 370)"/>
+  <line x1="380" y1="350" x2="385" y2="385" stroke="#6366f1" stroke-width="2" transform="rotate(15, 380, 370)"/>
+  <line x1="380" y1="360" x2="385" y2="360" stroke="#6366f1" stroke-width="2" transform="rotate(15, 380, 370)"/>
+  <line x1="380" y1="370" x2="385" y2="370" stroke="#6366f1" stroke-width="2" transform="rotate(15, 380, 370)"/>
+
+  <!-- 大脑（发光灯泡） -->
+  <circle cx="320" cy="150" r="15" fill="#fbbf24" opacity="0.6"/>
+  <circle cx="320" cy="150" r="10" fill="#fde68a"/>
+  <path d="M320 160 L320 170" stroke="#fbbf24" stroke-width="2"/>
+  <path d="M312 168 L328 168" stroke="#fbbf24" stroke-width="2"/>
+
+  <!-- 底部文字 -->
+  <text x="256" y="470" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="3">记忆助手</text>
+</svg>

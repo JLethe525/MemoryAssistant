@@ -99,6 +99,19 @@ public class MemoryApp extends Application {
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
 
+        // 小头像
+        javafx.scene.image.ImageView logoView = new javafx.scene.image.ImageView(
+                new javafx.scene.image.Image(getClass().getResourceAsStream("/logo.svg"))
+        );
+        logoView.setFitWidth(24);
+        logoView.setFitHeight(24);
+        logoView.setPreserveRatio(true);
+
+        HBox logoBox = new HBox(6);
+        logoBox.setAlignment(Pos.CENTER_LEFT);
+        logoBox.setPadding(new Insets(0, 0, 0, 8));
+        logoBox.getChildren().addAll(logoView, title);
+
         Label author = new Label("------ JLethe.");
         author.setStyle("-fx-text-fill: rgba(255,255,255,0.2); -fx-font-size: 13px; -fx-padding: 0 0 14 10;");
 
@@ -155,7 +168,7 @@ public class MemoryApp extends Application {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
         sidebar.getChildren().addAll(
-                title,
+                logoBox,
                 author,
                 homeBtn, cardBtn, reviewBtn,
                 focusTitle, pomoBtn, forestBtn,
