@@ -156,13 +156,7 @@ public class GraphView {
                     alert.setHeaderText(n.front);
                     alert.setContentText(n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
                             + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
-                    DialogPane dp = alert.getDialogPane();
-                    dp.setStyle("-fx-background-color: #111827; -fx-background-radius: 16;");
-                    dp.lookup(".content.label").setStyle("-fx-text-fill: #4ade80; -fx-font-size: 14px;");
-                    dp.lookup(".header-panel").setStyle("-fx-background-color: transparent;");
-                    dp.lookup(".header-panel .label").setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-                    // 内容文字（答案）亮绿色
-                    dp.lookup(".content").setStyle("-fx-text-fill: #4ade80; -fx-font-size: 14px;");
+                    alert.getDialogPane().setStyle("-fx-background-color: #111827;");
                     alert.show();
                 }
             }
