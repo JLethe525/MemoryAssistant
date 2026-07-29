@@ -73,15 +73,7 @@ public class CardListView {
         Button addBtn = new Button("+ 添加卡片");
         addBtn.getStyleClass().add("btn-primary");
 
-        Button fileBtn = new Button("📄 识文件");
-        fileBtn.setStyle("-fx-background-color: #10b981; -fx-background-radius: 12; -fx-text-fill: white; "
-                + "-fx-font-size: 13px; -fx-padding: 10 18; -fx-cursor: hand; -fx-font-weight: bold;");
-
-        Button imgBtn = new Button("🖼️ 识图片");
-        imgBtn.setStyle("-fx-background-color: #8b5cf6; -fx-background-radius: 12; -fx-text-fill: white; "
-                + "-fx-font-size: 13px; -fx-padding: 10 18; -fx-cursor: hand; -fx-font-weight: bold;");
-
-        toolbar.getChildren().addAll(title, spacer, searchField, filterCombo, starFilterBtn, fileBtn, imgBtn, addBtn);
+        toolbar.getChildren().addAll(title, spacer, searchField, filterCombo, starFilterBtn, addBtn);
 
         // 底部操作栏
         HBox bottomBar = new HBox(10);
@@ -99,8 +91,6 @@ public class CardListView {
 
         // 事件绑定
         addBtn.setOnAction(e -> handleAdd());
-        fileBtn.setOnAction(e -> handleScanFile());
-        imgBtn.setOnAction(e -> handleScanImage());
         editBtn.setOnAction(e -> handleEdit());
         deleteBtn.setOnAction(e -> handleDelete());
         filterCombo.setOnAction(e -> applyFilter());
@@ -259,7 +249,7 @@ public class CardListView {
         }
     }
 
-    private void handleScanFile() {
+    public void handleScanFile() {
         List<String> cats = masterList.stream().map(FlashCard::getCategory).distinct().collect(Collectors.toList());
         List<FlashCard> newCards = OcrDialog.show(cats, false);
         if (newCards != null && !newCards.isEmpty()) {
@@ -270,7 +260,7 @@ public class CardListView {
         }
     }
 
-    private void handleScanImage() {
+    public void handleScanImage() {
         List<String> cats = masterList.stream().map(FlashCard::getCategory).distinct().collect(Collectors.toList());
         List<FlashCard> newCards = OcrDialog.show(cats, true);
         if (newCards != null && !newCards.isEmpty()) {

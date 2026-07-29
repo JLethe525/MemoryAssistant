@@ -73,11 +73,35 @@ public class MemoryApp extends Application {
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
 
-        homeBtn = createNavBtn("🏠  首页");
-        cardBtn = createNavBtn("📝  卡片管理");
-        reviewBtn = createNavBtn("🔄  开始复习");
-        curveBtn = createNavBtn("📈  遗忘曲线");
-        statsBtn = createNavBtn("📊  学习统计");
+        homeBtn = createNavBtn("[H] 首页");
+        cardBtn = createNavBtn("[C] 卡片管理");
+        reviewBtn = createNavBtn("[R] 开始复习");
+        curveBtn = createNavBtn("[F] 遗忘曲线");
+        statsBtn = createNavBtn("[S] 学习统计");
+
+        // 功能区
+        Label importTitle = new Label("导入功能");
+        importTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
+
+        Button fileImportBtn = createNavBtn("[D] 识文件");
+        fileImportBtn.setStyle("-fx-background-color: rgba(16,185,129,0.15); -fx-background-radius: 10; "
+                + "-fx-text-fill: #34d399; -fx-font-size: 13px; -fx-padding: 10 18; -fx-cursor: hand; -fx-border-color: rgba(16,185,129,0.2); -fx-border-radius: 10;");
+        fileImportBtn.setOnAction(e -> {
+            cardListView.refresh();
+            cardListView.handleScanFile();
+            showView(cardListView.getView());
+            setActiveNav(cardBtn);
+        });
+
+        Button imgImportBtn = createNavBtn("[I] 识图片");
+        imgImportBtn.setStyle("-fx-background-color: rgba(139,92,246,0.15); -fx-background-radius: 10; "
+                + "-fx-text-fill: #a78bfa; -fx-font-size: 13px; -fx-padding: 10 18; -fx-cursor: hand; -fx-border-color: rgba(139,92,246,0.2); -fx-border-radius: 10;");
+        imgImportBtn.setOnAction(e -> {
+            cardListView.refresh();
+            cardListView.handleScanImage();
+            showView(cardListView.getView());
+            setActiveNav(cardBtn);
+        });
 
         homeBtn.setOnAction(e -> { homeView.refresh(); showView(homeView.getView()); setActiveNav(homeBtn); });
         cardBtn.setOnAction(e -> { cardListView.refresh(); showView(cardListView.getView()); setActiveNav(cardBtn); });
@@ -87,7 +111,7 @@ public class MemoryApp extends Application {
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
-        sidebar.getChildren().addAll(title, homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn, spacer);
+        sidebar.getChildren().addAll(title, homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn, importTitle, fileImportBtn, imgImportBtn, spacer);
         return sidebar;
     }
 
