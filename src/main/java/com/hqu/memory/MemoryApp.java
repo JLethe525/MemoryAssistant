@@ -23,7 +23,9 @@ public class MemoryApp extends Application {
     private StatsView statsView;
     private PomodoroView pomodoroView;
     private ForestView forestView;
-    private Button homeBtn, cardBtn, reviewBtn, curveBtn, statsBtn, pomoBtn, forestBtn;
+    private FeynmanView feynmanView;
+    private GraphView graphView;
+    private Button homeBtn, cardBtn, reviewBtn, pomoBtn, forestBtn, graphBtn, feynmanBtn, curveBtn, statsBtn;
 
     @Override
     public void start(Stage stage) {
@@ -34,6 +36,8 @@ public class MemoryApp extends Application {
         statsView = new StatsView();
         pomodoroView = new PomodoroView();
         forestView = new ForestView();
+        feynmanView = new FeynmanView();
+        graphView = new GraphView();
 
         homeView.setOnStartReview(() -> {
             reviewView.startReview();
@@ -45,10 +49,12 @@ public class MemoryApp extends Application {
                 homeView.getView(),
                 cardListView.getView(),
                 reviewView.getView(),
-                curveView.getView(),
-                statsView.getView(),
                 pomodoroView.getView(),
-                forestView.getView()
+                forestView.getView(),
+                feynmanView.getView(),
+                graphView.getView(),
+                curveView.getView(),
+                statsView.getView()
         );
         contentArea.setPadding(new Insets(24));
 
@@ -85,13 +91,16 @@ public class MemoryApp extends Application {
 
         Label focusTitle = new Label("专注与成长");
         focusTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
-
         pomoBtn = createNavBtn("🍅  番茄钟");
         forestBtn = createNavBtn("🌳  记忆森林");
 
+        Label learnTitle = new Label("深度学习");
+        learnTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
+        feynmanBtn = createNavBtn("🤔  费曼学习");
+        graphBtn = createNavBtn("🔗  知识图谱");
+
         Label chartTitle = new Label("数据分析");
         chartTitle.setStyle("-fx-text-fill: rgba(255,255,255,0.3); -fx-font-size: 11px; -fx-padding: 16 0 4 10;");
-
         curveBtn = createNavBtn("📈  遗忘曲线");
         statsBtn = createNavBtn("📊  学习统计");
 
@@ -121,6 +130,8 @@ public class MemoryApp extends Application {
         reviewBtn.setOnAction(e -> { reviewView.startReview(); showView(reviewView.getView()); setActiveNav(reviewBtn); });
         pomoBtn.setOnAction(e -> { pomodoroView.refresh(); showView(pomodoroView.getView()); setActiveNav(pomoBtn); });
         forestBtn.setOnAction(e -> { forestView.refresh(); showView(forestView.getView()); setActiveNav(forestBtn); });
+        feynmanBtn.setOnAction(e -> { feynmanView.refresh(); showView(feynmanView.getView()); setActiveNav(feynmanBtn); });
+        graphBtn.setOnAction(e -> { graphView.refresh(); showView(graphView.getView()); setActiveNav(graphBtn); });
         curveBtn.setOnAction(e -> { curveView.refresh(); showView(curveView.getView()); setActiveNav(curveBtn); });
         statsBtn.setOnAction(e -> { statsView.refresh(); showView(statsView.getView()); setActiveNav(statsBtn); });
 
@@ -130,6 +141,7 @@ public class MemoryApp extends Application {
                 title,
                 homeBtn, cardBtn, reviewBtn,
                 focusTitle, pomoBtn, forestBtn,
+                learnTitle, feynmanBtn, graphBtn,
                 chartTitle, curveBtn, statsBtn,
                 importTitle, fileImportBtn, imgImportBtn,
                 spacer
@@ -151,7 +163,7 @@ public class MemoryApp extends Application {
     }
 
     private void setActiveNav(Button active) {
-        for (Button btn : new Button[]{homeBtn, cardBtn, reviewBtn, pomoBtn, forestBtn, curveBtn, statsBtn})
+        for (Button btn : new Button[]{homeBtn, cardBtn, reviewBtn, pomoBtn, forestBtn, feynmanBtn, graphBtn, curveBtn, statsBtn})
             btn.getStyleClass().remove("active");
         active.getStyleClass().add("active");
     }
