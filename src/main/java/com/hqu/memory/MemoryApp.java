@@ -156,7 +156,6 @@ public class MemoryApp extends Application {
                 spacer
         );
 
-        root.setLeft(scrollPane);
         return scrollPane;
     }
 
