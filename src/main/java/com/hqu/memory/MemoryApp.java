@@ -100,9 +100,20 @@ public class MemoryApp extends Application {
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
 
-        // 小头像
-        Label logoLabel = new Label("🧠");
-        logoLabel.setStyle("-fx-font-size: 22px; -fx-padding: 0 4 0 0;");
+        // 小头像（点击可切换）
+        String[] emojis = {"🧠", "🐱", "🦉", "📚", "⭐", "🌸"};
+        Label logoLabel = new Label(emojis[0]);
+        logoLabel.setStyle("-fx-font-size: 20px; -fx-padding: 0 4 0 0; -fx-cursor: hand;");
+
+        logoLabel.setOnMouseClicked(e -> {
+            String current = logoLabel.getText();
+            for (int i = 0; i < emojis.length; i++) {
+                if (emojis[i].equals(current)) {
+                    logoLabel.setText(emojis[(i + 1) % emojis.length]);
+                    break;
+                }
+            }
+        });
 
         HBox logoBox = new HBox(4);
         logoBox.setAlignment(Pos.CENTER_LEFT);
