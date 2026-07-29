@@ -81,6 +81,13 @@ public class MemoryApp extends Application {
     private VBox createSidebar() {
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
+        sidebar.setPrefWidth(180);
+
+        ScrollPane scrollPane = new ScrollPane(sidebar);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
@@ -146,6 +153,8 @@ public class MemoryApp extends Application {
                 importTitle, fileImportBtn, imgImportBtn,
                 spacer
         );
+
+        root.setLeft(scrollPane);
         return sidebar;
     }
 
