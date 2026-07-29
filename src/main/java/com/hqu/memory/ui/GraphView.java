@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
@@ -155,7 +156,11 @@ public class GraphView {
                     alert.setHeaderText(n.front);
                     alert.setContentText(n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
                             + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
-                    alert.getDialogPane().setStyle("-fx-background-color: #111827;");
+                    DialogPane dp = alert.getDialogPane();
+                    dp.setStyle("-fx-background-color: #111827; -fx-background-radius: 16;");
+                    dp.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+                    dp.lookup(".header-panel").setStyle("-fx-background-color: transparent;");
+                    dp.lookup(".header-panel .label").setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
                     alert.show();
                 }
             }
