@@ -218,11 +218,11 @@ public class CurveView {
             g.stroke();
 
             // ---- 在每个节点画该学科的气泡 ----
+            boolean dense = totalCat > 10;
             for (int s = 0; s <= 5; s++) {
                 int d = SpacedRepetition.INTERVALS[s];
                 double t = d;
 
-                // 用加权曲线计算 Y 位置（与画线逻辑一致）
                 double baseRetention = Math.exp(-t / lambda);
                 double weightedRetention = 0;
                 for (int st = 0; st <= 5; st++) {
@@ -239,30 +239,35 @@ public class CurveView {
                 long cnt = stageCount.getOrDefault(s, 0L);
                 if (cnt == 0) continue;
 
-                // 气泡大小
-                double radius = 3 + Math.min(cnt * 2.5, 18);
-
-                // 发光圈
                 double aR = color.getRed(), aG = color.getGreen(), aB = color.getBlue();
-                RadialGradient nodeGlow = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE,
-                        new Stop(0, Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0.25)),
-                        new Stop(1, Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0)));
-                g.setFill(nodeGlow);
-                g.fillOval(nx - radius - 5, ny - radius - 5, (radius + 5) * 2, (radius + 5) * 2);
 
-                // 半透明气泡
-                g.setFill(Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0.45));
-                g.fillOval(nx - radius, ny - radius, radius * 2, radius * 2);
-                g.setStroke(Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0.75));
-                g.setLineWidth(1.5);
-                g.strokeOval(nx - radius, ny - radius, radius * 2, radius * 2);
-
-                // 气泡内的数字
-                if (radius >= 6) {
-                    g.setFill(Color.rgb(255, 255, 255, 0.9));
-                    g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, (int)Math.min(radius + 2, 14)));
+                if (dense) {
+                    // 卡片多时：小圆点 + 上方数字
+                    g.setFill(color);
+                    g.fillOval(nx - 3, ny - 3, 6, 6);
+                    g.setFill(Color.rgb(255, 255, 255, 0.6));
+                    g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 10));
                     g.setTextAlign(TextAlignment.CENTER);
-                    g.fillText(String.valueOf(cnt), nx, ny + 4);
+                    g.fillText(String.valueOf(cnt), nx, ny - 8);
+                } else {
+                    // 卡片少时：气泡 + 数字
+                    double radius = 3 + Math.min(cnt * 2.5, 18);
+                    RadialGradient nodeGlow = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE,
+                            new Stop(0, Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0.25)),
+                            new Stop(1, Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0)));
+                    g.setFill(nodeGlow);
+                    g.fillOval(nx - radius - 5, ny - radius - 5, (radius + 5) * 2, (radius + 5) * 2);
+                    g.setFill(Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0.45));
+                    g.fillOval(nx - radius, ny - radius, radius * 2, radius * 2);
+                    g.setStroke(Color.rgb((int)(aR*255), (int)(aG*255), (int)(aB*255), 0.75));
+                    g.setLineWidth(1.5);
+                    g.strokeOval(nx - radius, ny - radius, radius * 2, radius * 2);
+                    if (radius >= 6) {
+                        g.setFill(Color.rgb(255, 255, 255, 0.9));
+                        g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, (int)Math.min(radius + 2, 14)));
+                        g.setTextAlign(TextAlignment.CENTER);
+                        g.fillText(String.valueOf(cnt), nx, ny + 4);
+                    }
                 }
             }
 
