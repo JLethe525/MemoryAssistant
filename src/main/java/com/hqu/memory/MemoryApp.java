@@ -99,6 +99,9 @@ public class MemoryApp extends Application {
         Label title = new Label("记忆助手");
         title.getStyleClass().add("sidebar-title");
 
+        Label author = new Label("------ JLethe.");
+        author.setStyle("-fx-text-fill: rgba(255,255,255,0.15); -fx-font-size: 11px; -fx-padding: 0 0 12 10;");
+
         homeBtn = createNavBtn("🏠  首页");
         cardBtn = createNavBtn("📝  卡片管理");
         reviewBtn = createNavBtn("🔄  开始复习");
@@ -153,6 +156,7 @@ public class MemoryApp extends Application {
         VBox.setVgrow(spacer, Priority.ALWAYS);
         sidebar.getChildren().addAll(
                 title,
+                author,
                 homeBtn, cardBtn, reviewBtn,
                 focusTitle, pomoBtn, forestBtn,
                 learnTitle, feynmanBtn, graphBtn,
