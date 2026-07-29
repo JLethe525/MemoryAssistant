@@ -153,12 +153,24 @@ public class GraphView {
                     NodeData n = nodes.get(idx);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("📌 卡片详情");
-                    alert.setHeaderText(n.front);
-                    alert.setContentText(n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
-                            + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
+                    alert.setHeaderText(null);
+
+                    Label answerLabel = new Label(n.back);
+                    answerLabel.setStyle("-fx-text-fill: #4ade80; -fx-font-size: 14px;");
+                    answerLabel.setWrapText(true);
+
+                    Label infoLabel = new Label("🏷️ 分类: " + n.category + "  |  📍 Stage: " + n.stage + "  |  📏 大小: " + (n.radius - 12) / 3 + " 级");
+                    infoLabel.setStyle("-fx-text-fill: #fbbf24; -fx-font-size: 12px;");
+
+                    VBox content = new VBox(10);
+                    content.setPadding(new javafx.geometry.Insets(10, 0, 0, 0));
+                    Label titleLabel = new Label(n.front);
+                    titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+                    titleLabel.setWrapText(true);
+                    content.getChildren().addAll(titleLabel, answerLabel, infoLabel);
+
+                    alert.getDialogPane().setContent(content);
                     alert.getDialogPane().setStyle("-fx-background-color: #111827;");
-                    alert.getDialogPane().lookup(".header-panel .label").setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-                    alert.getDialogPane().lookup(".content").setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
                     alert.show();
                 }
             }
