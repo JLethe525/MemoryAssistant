@@ -221,8 +221,18 @@ public class CurveView {
             for (int s = 0; s <= 5; s++) {
                 int d = SpacedRepetition.INTERVALS[s];
                 double t = d;
-                double baseRet = Math.exp(-t / lambda);
-                double ret = baseRet + breathe;
+
+                // 用加权曲线计算 Y 位置（与画线逻辑一致）
+                double baseRetention = Math.exp(-t / lambda);
+                double weightedRetention = 0;
+                for (int st = 0; st <= 5; st++) {
+                    long cnt = stageCount.getOrDefault(st, 0L);
+                    if (cnt == 0) continue;
+                    int day = SpacedRepetition.INTERVALS[st];
+                    double cardRetention = Math.exp(-(t + day) / lambda);
+                    weightedRetention += cardRetention * cnt / totalCat;
+                }
+                double ret = (totalCat > 0 ? weightedRetention : baseRetention) + breathe;
                 double nx = ax + aw * d / 30.0;
                 double ny = ay + ah - ah * ret;
 
@@ -258,7 +268,17 @@ public class CurveView {
 
             // ---- 曲线末端标注学科名 ----
             double labelX = ax + aw + 6;
-            double labelY = ay + ah - ah * (Math.exp(-30 / lambda) + breathe);
+            double labelT = 30;
+            double labelBaseRet = Math.exp(-labelT / lambda);
+            double labelWeighted = 0;
+            for (int st = 0; st <= 5; st++) {
+                long cnt = stageCount.getOrDefault(st, 0L);
+                if (cnt == 0) continue;
+                int day = SpacedRepetition.INTERVALS[st];
+                labelWeighted += Math.exp(-(labelT + day) / lambda) * cnt / totalCat;
+            }
+            double labelRet = (totalCat > 0 ? labelWeighted : labelBaseRet) + breathe;
+            double labelY = ay + ah - ah * labelRet;
             g.setFill(color);
             g.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 13));
             g.setTextAlign(TextAlignment.LEFT);
