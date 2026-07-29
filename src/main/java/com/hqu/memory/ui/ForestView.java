@@ -8,7 +8,9 @@ import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.Font;
@@ -22,9 +24,7 @@ import java.util.prefs.Preferences;
 
 /**
  * 记忆森林
- * 复习卡片→浇水→树长大
- * 完成番茄钟→长新树
- * 柔和手绘风格
+ * 点击树显示数据，悬浮高亮，干净手绘风
  */
 public class ForestView {
 
@@ -32,15 +32,21 @@ public class ForestView {
     private final Canvas canvas;
     private final Label titleLabel;
     private final Label statsLabel;
+    private final Label clickHint;
     private double time = 0;
 
     private static final Preferences PREFS = Preferences.userNodeForPackage(ForestView.class);
+
+    // 树数据数组（用于点击检测）
+    private double[] treeX, treeY, treeSize;
+    private String[] treeLabel;
+    private int treeCount = 0;
+    private int hoveredIdx = -1;
 
     public ForestView() {
         view = new BorderPane();
         view.getStyleClass().add("glass-panel");
 
-        // 标题
         titleLabel = new Label("🌳 记忆森林");
         titleLabel.getStyleClass().add("page-title");
 
@@ -52,7 +58,6 @@ public class ForestView {
         header.setPadding(new Insets(0, 0, 10, 0));
         header.getChildren().addAll(titleLabel, statsLabel);
 
-        // Canvas
         canvas = new Canvas(860, 440);
         canvas.setEffect(new DropShadow(20, Color.rgb(34, 197, 94, 0.1)));
 
@@ -60,16 +65,41 @@ public class ForestView {
         canvasBox.setPadding(new Insets(0));
         VBox.setVgrow(canvasBox, Priority.ALWAYS);
 
-        // 底部说明
-        Label hint = new Label("📝 复习卡片为树木浇水  ·  🍅 完成番茄钟长出新的树苗");
-        hint.setStyle("-fx-text-fill: rgba(255,255,255,0.25); -fx-font-size: 12px;");
-        HBox hintBox = new HBox(hint);
+        // 底部提示
+        clickHint = new Label("💡 点击树木查看数据  ·  复习卡片为树木浇水  ·  番茄钟长出新树");
+        clickHint.setStyle("-fx-text-fill: rgba(255,255,255,0.25); -fx-font-size: 12px;");
+        HBox hintBox = new HBox(clickHint);
         hintBox.setAlignment(Pos.CENTER);
         hintBox.setPadding(new Insets(12, 0, 0, 0));
 
         view.setTop(header);
         view.setCenter(canvasBox);
         view.setBottom(hintBox);
+
+        // 交互：鼠标移动检测悬停
+        canvas.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
+            int old = hoveredIdx;
+            hoveredIdx = findTreeAt(e.getX(), e.getY());
+            if (old != hoveredIdx) draw();
+            updateCursor();
+        });
+
+        // 点击弹提示
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            int idx = findTreeAt(e.getX(), e.getY());
+            if (idx >= 0 && idx < treeCount) {
+                Tooltip tip = new Tooltip(treeLabel[idx]);
+                tip.setStyle("-fx-background-color: #1e1b34; -fx-text-fill: white; -fx-font-size: 12px; "
+                        + "-fx-background-radius: 10; -fx-padding: 8 14; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;");
+                Tooltip.install(canvas, tip);
+                tip.show(canvas, e.getScreenX(), e.getScreenY() - 30);
+                // 3秒后自动消失
+                new Thread(() -> {
+                    try { Thread.sleep(3000); } catch (InterruptedException ex) {}
+                    javafx.application.Platform.runLater(() -> Tooltip.uninstall(canvas, tip));
+                }).start();
+            }
+        });
 
         // 呼吸动画
         AnimationTimer timer = new AnimationTimer() {
@@ -98,6 +128,26 @@ public class ForestView {
         return "🌲 " + total + "张卡片  ·  💧 今日复习" + reviewed + "张  ·  🍅 " + pomos + "个番茄钟";
     }
 
+    private void updateCursor() {
+        Canvas c = canvas;
+        if (hoveredIdx >= 0) {
+            c.setStyle("-fx-cursor: hand;");
+        } else {
+            c.setStyle("-fx-cursor: default;");
+        }
+    }
+
+    private int findTreeAt(double mx, double my) {
+        for (int i = 0; i < treeCount; i++) {
+            double dx = mx - treeX[i];
+            double dy = my - treeY[i];
+            // 点击范围：树冠半径附近
+            double hitRadius = 10 + treeSize[i] * 20;
+            if (dx * dx + dy * dy < hitRadius * hitRadius) return i;
+        }
+        return -1;
+    }
+
     private void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
         double W = canvas.getWidth();
@@ -106,159 +156,143 @@ public class ForestView {
 
         g.clearRect(0, 0, W, H);
 
-        // ===== 背景：天空渐变 =====
+        // 天空
         LinearGradient sky = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
-                new Stop(0, Color.rgb(15, 15, 40, 0.6)),
-                new Stop(0.4, Color.rgb(20, 25, 50, 0.3)),
-                new Stop(1, Color.rgb(10, 15, 20, 0.2)));
+                new Stop(0, Color.rgb(15, 15, 40, 0.5)),
+                new Stop(1, Color.rgb(20, 25, 50, 0.2)));
         g.setFill(sky);
         g.fillRect(0, 0, W, H * 0.65);
 
-        // ===== 地面 =====
+        // 地面
         LinearGradient ground = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
-                new Stop(0, Color.rgb(20, 40, 25, 0.5)),
-                new Stop(1, Color.rgb(15, 30, 20, 0.3)));
+                new Stop(0, Color.rgb(22, 40, 28, 0.4)),
+                new Stop(1, Color.rgb(15, 30, 20, 0.2)));
         g.setFill(ground);
         g.fillRect(0, H * 0.65, W, H * 0.35);
 
-        // 地面线（柔和曲线）
-        g.setStroke(Color.rgb(34, 197, 94, 0.15));
-        g.setLineWidth(2);
-        g.beginPath();
         double groundY = H * 0.65;
+        g.setStroke(Color.rgb(34, 197, 94, 0.12));
+        g.setLineWidth(1.5);
+        g.beginPath();
         for (int px = 0; px <= W; px++) {
-            double wave = Math.sin(px * 0.008 + time * 0.3) * 4
-                       + Math.sin(px * 0.02 + time * 0.2) * 2;
+            double wave = Math.sin(px * 0.01 + time * 0.2) * 3;
             if (px == 0) g.moveTo(px, groundY + wave);
             else g.lineTo(px, groundY + wave);
         }
         g.stroke();
 
-        // ===== 星星（微闪） =====
+        // 星星（更淡）
         Random rnd = new Random(42);
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 25; i++) {
             double sx = rnd.nextDouble() * W;
             double sy = rnd.nextDouble() * H * 0.5;
-            double twinkle = 0.15 + 0.15 * Math.sin(time * 1.5 + i * 2.3);
+            double twinkle = 0.1 + 0.1 * Math.sin(time * 1.5 + i * 2.3);
             g.setFill(Color.rgb(255, 255, 255, twinkle));
-            g.fillOval(sx, sy, 1.5, 1.5);
+            g.fillOval(sx, sy, 1.2, 1.2);
         }
 
-        // ===== 数据 =====
+        // 数据
         List<FlashCard> cards = DataStore.loadCards();
         int pomos = PREFS.getInt("pomo_" + LocalDate.now().toString(), 0);
 
-        // ===== 种树 =====
-        // 策略：每张卡片 = 一滴水，每完成 5 次复习 = 树升一级
-        // 番茄钟 = 新树苗
-        // 用固定随机种子的位置，让树的位置保持稳定
-
-        // 收集所有卡片在每个 stage 的分布
         int[] stageCounts = new int[6];
         for (FlashCard c : cards) stageCounts[c.getStage()]++;
 
-        // 树列表：每棵树有 (x, y, size)
-        int totalTreeCount = Math.max(pomos, 1) + stageCounts[5] / 3 + (int)(cards.size() / 10);
-        if (totalTreeCount > 30) totalTreeCount = 30;
+        treeCount = Math.max(pomos, 1) + stageCounts[5] / 3 + (int)(cards.size() / 10);
+        if (treeCount > 30) treeCount = 30;
+
+        treeX = new double[treeCount];
+        treeY = new double[treeCount];
+        treeSize = new double[treeCount];
+        treeLabel = new String[treeCount];
 
         Random treeRnd = new Random(123);
-        double[] treeX = new double[totalTreeCount];
-        double[] treeSize = new double[totalTreeCount];
-        double[] treeHue = new double[totalTreeCount]; // 颜色微调
 
-        for (int i = 0; i < totalTreeCount; i++) {
-            treeX[i] = 30 + treeRnd.nextDouble() * (W - 60);
-            // 大小由番茄钟数量 + 复习卡片数决定
-            double base = 0.3;
-            double fromPomo = Math.min(pomos, 10) / 10.0 * 0.4;
+        for (int i = 0; i < treeCount; i++) {
+            treeX[i] = 40 + treeRnd.nextDouble() * (W - 80);
+            double base = 0.35;
+            double fromPomo = Math.min(pomos, 10) / 10.0 * 0.35;
             double fromCards = Math.min(cards.size(), 50) / 50.0 * 0.3;
-            treeSize[i] = base + fromPomo + fromCards + treeRnd.nextDouble() * 0.15;
+            treeSize[i] = base + fromPomo + fromCards + treeRnd.nextDouble() * 0.1;
             if (treeSize[i] > 1.0) treeSize[i] = 1.0;
-            treeHue[i] = 100 + treeRnd.nextDouble() * 40; // 不同绿色
+            // 生成树种不同的标签
+            double gy = groundY + Math.sin(treeX[i] * 0.02) * 4;
+            double th = (80 * treeSize[i] + 20) * 0.65;
+            treeY[i] = gy - th;
+            treeLabel[i] = "🌲 " + (i < pomos ? "番茄树 #" + (i+1) : "记忆树 #" + (i+1))
+                    + "\n大小: " + (int)(treeSize[i] * 100) + "%";
         }
 
-        // 从右到左画（远处先画）
-        for (int i = totalTreeCount - 1; i >= 0; i--) {
-            drawTree(g, treeX[i], groundY, treeSize[i], treeHue[i]);
+        // 从右到左画
+        for (int i = treeCount - 1; i >= 0; i--) {
+            boolean hovered = (i == hoveredIdx);
+            drawTree(g, treeX[i], groundY, treeSize[i], i, hovered);
         }
 
-        // ===== 没有数据时的提示 =====
         if (cards.isEmpty() && pomos == 0) {
             g.setFill(Color.rgb(255, 255, 255, 0.2));
             g.setFont(Font.font("Microsoft YaHei", 14));
             g.setTextAlign(TextAlignment.CENTER);
-            g.fillText("🌱 开始学习和复习，你的森林会在这里生长", W / 2, H * 0.45);
+            g.fillText("🌱 开始复习和完成番茄钟，你的森林会在这里生长", W / 2, H * 0.45);
         }
     }
 
-    /** 画一棵柔和手绘风格的树 */
-    private void drawTree(GraphicsContext g, double x, double groundY, double size, double hue) {
-        double treeHeight = 80 * size + 20;
-        double trunkHeight = treeHeight * 0.35;
-        double crownRadius = treeHeight * 0.45;
+    /** 干净简洁的树 */
+    private void drawTree(GraphicsContext g, double x, double groundY, double size, int idx, boolean hovered) {
+        double treeHeight = 70 * size + 20;
+        double trunkH = treeHeight * 0.4;
+        double crownR = treeHeight * 0.4;
 
         double bx = x;
-        double by = groundY + Math.sin(x * 0.02) * 4; // 跟随地面起伏
+        double by = groundY + Math.sin(x * 0.02) * 4;
 
-        // === 树干（柔和棕色） ===
-        g.setStroke(Color.rgb(120 + (int)(hue * 0.2), 80, 50, 0.5));
-        g.setLineWidth(3 * size + 1);
+        double trunkTop = by - trunkH;
+        double crownY = trunkTop - crownR * 0.2;
+
+        // 树干
+        double trunkW = 3 * size + 1;
+        g.setStroke(Color.rgb(100, 70, 40, 0.5));
+        g.setLineWidth(trunkW);
         g.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
-        g.beginPath();
-        g.moveTo(bx, by);
-        double trunkTop = by - trunkHeight;
-        // 微微弯曲的树干
-        double curve = Math.sin(x * 0.5) * 3;
-        g.quadraticCurveTo(bx + curve, by - trunkHeight * 0.5, bx + curve * 0.5, trunkTop);
-        g.stroke();
+        g.strokeLine(bx, by, bx, trunkTop);
 
-        // === 树冠（多层半透明圆，柔和叠色） ===
-        double crownCenterY = trunkTop - crownRadius * 0.3;
-        int layers = 3;
+        // 树冠（2层，半透明叠翠）
+        Color baseGreen = Color.rgb(34, 197, 94, 0.55);
+        Color lightGreen = Color.rgb(74, 222, 128, 0.40);
 
-        Color[] greens = {
-                Color.rgb(34, 197 + (int)(hue * 0.15), 80 + (int)(hue * 0.2), 0.35),
-                Color.rgb(74, 222 + (int)(hue * 0.1), 100 + (int)(hue * 0.15), 0.30),
-                Color.rgb(134, 239 + (int)(hue * 0.05), 120, 0.25)
-        };
+        double sway = Math.sin(time * 0.5 + idx) * 1.5;
+        double cx = bx + sway;
+        double cy = crownY;
 
-        for (int li = 0; li < layers; li++) {
-            double layerRadius = crownRadius * (0.7 + li * 0.15);
-            double lx = bx + (li - 1) * crownRadius * 0.25;
-            double ly = crownCenterY + (li - 1) * crownRadius * 0.15;
-
-            // 轻微摆动
-            double sway = Math.sin(time * 0.5 + x * 0.1 + li) * 2;
-            lx += sway;
-
-            g.setFill(greens[li]);
-            g.fillOval(lx - layerRadius, ly - layerRadius, layerRadius * 2, layerRadius * 2);
-
-            // 树冠边缘光晕
-            RadialGradient crownGlow = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE,
-                    new Stop(0, Color.rgb(255, 255, 255, 0.0)),
-                    new Stop(0.7, Color.rgb(255, 255, 255, 0.0)),
-                    new Stop(1, Color.rgb(255, 255, 255, 0.04)));
-            g.setFill(crownGlow);
-            g.fillOval(lx - layerRadius, ly - layerRadius, layerRadius * 2, layerRadius * 2);
+        if (hovered) {
+            // 悬停高亮：加发光圈
+            g.setFill(Color.rgb(255, 255, 200, 0.08));
+            g.fillOval(cx - crownR - 8, cy - crownR - 8, (crownR + 8) * 2, (crownR + 8) * 2);
         }
 
-        // === 小果实/光点（树冠上的彩色小点） ===
+        // 底层（大）
+        g.setFill(baseGreen);
+        g.fillOval(cx - crownR, cy - crownR, crownR * 2, crownR * 2);
+        // 上层（小偏上）
+        double topR = crownR * 0.7;
+        double topY = cy - crownR * 0.25;
+        g.setFill(lightGreen);
+        g.fillOval(cx - topR, topY - topR, topR * 2, topR * 2);
+
+        // 树冠描边（干净轮廓）
+        g.setStroke(Color.rgb(34, 197, 94, 0.25));
+        g.setLineWidth(1);
+        g.strokeOval(cx - crownR, cy - crownR, crownR * 2, crownR * 2);
+
+        // 少量小果（减少到最多3颗，颜色收敛）
         if (size > 0.5) {
-            Random fruitRnd = new Random((long)(x * 100));
-            int fruitCount = (int)(size * 6) + 2;
-            for (int fi = 0; fi < fruitCount; fi++) {
-                double fx = bx + (fruitRnd.nextDouble() - 0.5) * crownRadius * 1.2;
-                double fy = crownCenterY + (fruitRnd.nextDouble() - 0.5) * crownRadius * 0.8;
-                double fr = 1.5 + fruitRnd.nextDouble() * 2.5;
-                Color fc;
-                switch (fruitRnd.nextInt(3)) {
-                    case 0: fc = Color.rgb(251, 191, 36, 0.5); break;  // 金色
-                    case 1: fc = Color.rgb(248, 113, 113, 0.4); break; // 红色
-                    default: fc = Color.rgb(167, 139, 250, 0.4); break; // 紫色
-                }
-                g.setFill(fc);
-                g.fillOval(fx - fr, fy - fr, fr * 2, fr * 2);
+            Random fr = new Random((long)(x * 100));
+            int n = Math.min((int)(size * 3), 3);
+            for (int fi = 0; fi < n; fi++) {
+                double fx = cx + (fr.nextDouble() - 0.5) * crownR * 1.0;
+                double fy = cy + (fr.nextDouble() - 0.5) * crownR * 0.7;
+                g.setFill(Color.rgb(251, 191, 36, 0.5));
+                g.fillOval(fx - 2, fy - 2, 4, 4);
             }
         }
     }
