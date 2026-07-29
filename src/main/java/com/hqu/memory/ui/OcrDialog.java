@@ -103,7 +103,20 @@ public class OcrDialog {
 
         ListView<CheckBox> cardListView = new ListView<>();
         cardListView.setPrefHeight(180);
-        cardListView.setStyle("-fx-background-color: transparent;");
+        cardListView.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        cardListView.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(CheckBox item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    setGraphic(item);
+                    setStyle("-fx-background-color: rgba(255,255,255,0.04); -fx-padding: 4 8;");
+                }
+            }
+        });
         cardListView.setVisible(false);
 
         // ---- 底部 ----
@@ -254,6 +267,8 @@ public class OcrDialog {
         cancelBtn.setOnAction(e -> dialog.close());
 
         Scene scene = new Scene(root, 520, 680);
+        scene.setFill(javafx.scene.paint.Color.web("#111827"));
+        scene.getStylesheets().add(OcrDialog.class.getResource("/styles/glass.css").toExternalForm());
         dialog.setScene(scene);
         dialog.showAndWait();
 
