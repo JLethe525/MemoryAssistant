@@ -153,8 +153,8 @@ public class GraphView {
                     NodeData n = nodes.get(idx);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("📌 卡片详情");
-                    alert.setHeaderText(n.front);
-                    alert.setContentText(n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
+                    alert.setHeaderText("📌 " + n.front);
+                    alert.setContentText("📝 " + n.back + "\n\n🏷️ 分类: " + n.category + "\n📍 Stage: " + n.stage
                             + "\n📏 大小: " + (n.radius - 12) / 3 + " 级");
                     alert.getDialogPane().setStyle("-fx-background-color: #111827;");
                     alert.show();
