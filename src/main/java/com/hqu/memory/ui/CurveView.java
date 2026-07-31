@@ -251,13 +251,21 @@ public class CurveView {
             for (int px = 0; px <= aw; px++) {
                 double t = px / aw * 30;
                 double base = Math.exp(-t / lambda);
+                // 加权：stage 越高代表记忆越牢固，对整体记忆率贡献越大（线越高）
+                // 每张卡片按它的 stage 折算一个基础记忆强度，再叠加遗忘衰减
                 double weighted = 0;
                 for (int s = 0; s <= 5; s++) {
                     long cnt = stageCount.getOrDefault(s, 0L);
                     if (cnt == 0) continue;
-                    weighted += Math.exp(-(t + SpacedRepetition.INTERVALS[s]) / lambda) * cnt / totalCat;
+                    // 记忆强度：stage 越高强度越高（0~1 之间）
+                    double strength = s / 5.0;
+                    // 距离上次复习越久，遗忘越多；但基础强度高的卡片衰减后仍在更高位置
+                    double decay = Math.exp(-t / lambda);
+                    weighted += (strength + decay * 0.5) * cnt / totalCat;
                 }
                 double ret = (totalCat > 0 ? weighted : base) + breathe;
+                // 归一化到 0.1~1 之间显示
+                if (totalCat > 0) ret = 0.1 + ret * 0.9;
                 // 多学科时每条曲线加一个固定微偏移，避免完全重合
                 double yOffset = 0;
                 if (!singleMode && grouped.size() > 1) {
@@ -282,9 +290,13 @@ public class CurveView {
                 for (int st = 0; st <= 5; st++) {
                     long cnt = stageCount.getOrDefault(st, 0L);
                     if (cnt == 0) continue;
-                    w2 += Math.exp(-(t + SpacedRepetition.INTERVALS[st]) / lambda) * cnt / totalCat;
+                    // 与画线公式保持一致：stage 越高记忆强度越高
+                    double strength = st / 5.0;
+                    double decay = Math.exp(-t / lambda);
+                    w2 += (strength + decay * 0.5) * cnt / totalCat;
                 }
                 double ret2 = (totalCat > 0 ? w2 : base2) + breathe;
+                if (totalCat > 0) ret2 = 0.1 + ret2 * 0.9;
                 double nx = ax + aw * d / 30.0;
                 double ny = ay + ah - ah * ret2;
                 long cnt = stageCount.getOrDefault(s, 0L);
@@ -331,9 +343,12 @@ public class CurveView {
                 for (int st = 0; st <= 5; st++) {
                     long c = stageCount.getOrDefault(st, 0L);
                     if (c == 0) continue;
-                    lw += Math.exp(-(lt + SpacedRepetition.INTERVALS[st]) / lambda) * c / totalCat;
+                    double strength = st / 5.0;
+                    double decay = Math.exp(-lt / lambda);
+                    lw += (strength + decay * 0.5) * c / totalCat;
                 }
                 double lr = (totalCat > 0 ? lw : lb) + breathe;
+                if (totalCat > 0) lr = 0.1 + lr * 0.9;
                 double ly = ay + ah - ah * lr;
                 g.setFill(color);
             }
