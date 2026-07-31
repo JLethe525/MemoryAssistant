@@ -5,22 +5,38 @@ import java.util.UUID;
 
 /**
  * 闪卡数据模型
- * stage: 0-5, 对应遗忘曲线间隔 [0,1,3,7,15,30] 天
- * stage=5 表示"已掌握"
+ * 【讲解重点：这是整个应用的数据基础】
+ *
+ * 每张卡片包含：
+ * - 正反面内容（题目 + 答案）
+ * - 记忆阶段 stage（0→5，决定下次复习间隔）
+ * - 复习记录（记得/模糊/不记得的次数）
+ * - 收藏状态
+ *
+ * stage 0-5 对应遗忘曲线的 6 个间隔：
+ *   stage 0 → 立即复习（刚创建）
+ *   stage 1 → 1天后复习
+ *   stage 2 → 3天后复习
+ *   stage 3 → 7天后复习
+ *   stage 4 → 15天后复习
+ *   stage 5 → 30天后复习（已掌握状态，长期维持）
+ *
+ * Gson 序列化原理：通过 getter/setter 自动将对象转为 JSON 字符串，
+ * 存到本地文件。加载时再转回来。所以每个字段都需要 get/set。
  */
 public class FlashCard {
     private String id;
     private String front;       // 正面（题目）
     private String back;        // 背面（答案）
     private String category;    // 分类（政治/英语/数学/专业课等）
-    private int stage;          // 记忆阶段 0-5
+    private int stage;          // 记忆阶段 0-5【核心字段，驱动遗忘曲线算法】
     private String nextReviewDate;  // 下次复习日期 (ISO: yyyy-MM-dd)
     private String lastReviewDate;  // 上次复习日期
     private String createdDate;     // 创建日期
-    private int easyCount;      // 记得次数
+    private int easyCount;      // 记得次数【统计用，展示学习成果】
     private int mediumCount;    // 模糊次数
     private int hardCount;      // 不记得次数
-    private boolean starred;    // 是否收藏
+    private boolean starred;    // 是否收藏【方便筛选重点卡片】
 
     // Gson 反序列化需要无参构造
     public FlashCard() {}
@@ -30,9 +46,9 @@ public class FlashCard {
         this.front = front;
         this.back = back;
         this.category = category;
-        this.stage = 0;
+        this.stage = 0;            // 新卡片从 stage 0 开始
         String today = LocalDate.now().toString();
-        this.nextReviewDate = today;
+        this.nextReviewDate = today; // 新建时立即可以复习
         this.createdDate = today;
         this.lastReviewDate = "";
         this.easyCount = 0;
@@ -40,18 +56,24 @@ public class FlashCard {
         this.hardCount = 0;
     }
 
-    /** 判断今天是否需要复习这张卡片 */
+    /**
+     * 判断今天是否需要复习这张卡片
+     * 【讲解重点：复习流程的触发条件】
+     * 比较 nextReviewDate 和今天：
+     *   如果 nextReviewDate <= today → 到期了，需要复习
+     *   否则 → 还没到时间
+     */
     public boolean isDue(LocalDate today) {
         if (nextReviewDate == null || nextReviewDate.isEmpty()) return false;
         return !LocalDate.parse(nextReviewDate).isAfter(today);
     }
 
-    /** 掌握度百分比 (0%~100%) */
+    /** 掌握度百分比 (0%~100%)，stage 每升一级 +20% */
     public int getMasteryPercent() {
         return stage * 20;
     }
 
-    // ----- getters & setters -----
+    // ----- getters & setters 所有字段都需要，Gson 依赖它们做序列化 -----
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -86,7 +108,7 @@ public class FlashCard {
     public int getHardCount() { return hardCount; }
     public void setHardCount(int hardCount) { this.hardCount = hardCount; }
 
-    /** 总复习次数 */
+    /** 总复习次数 = 记得 + 模糊 + 不记得 */
     public int getTotalReviewCount() { return easyCount + mediumCount + hardCount; }
 
     public boolean isStarred() { return starred; }
