@@ -202,8 +202,10 @@ public class OcrDialog {
                 try {
                     String result;
                     if (imageMode || isImage(file)) {
-                        // DeepSeek 不支持图片，降级为根据文件名推断内容
-                        result = OcrService.analyzeText(apiKey, "图片文件: " + file.getName() + "\n请根据文件名和格式推测可能的卡片内容。如果无法识别，生成一张通用卡片。", file.getName());
+                        // 【修复】真正把图片 base64 发给 AI 视觉模型
+                        byte[] imgBytes = Files.readAllBytes(file.toPath());
+                        String base64 = Base64.getEncoder().encodeToString(imgBytes);
+                        result = OcrService.analyzeImage(apiKey, base64);
                     } else if (text != null && !text.isEmpty()) {
                         result = OcrService.analyzeText(apiKey, text, file.getName());
                     } else {

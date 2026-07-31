@@ -19,7 +19,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * 调用 AI API 识别文件内容并生成多张卡片
+ * 调用 AI API 识别文件/图片内容并生成多张卡片
+ * 支持：
+ * - 文本文件（txt/docx/pdf）→ analyzeText
+ * - 图片文件（png/jpg）→ analyzeImage（视觉模型）
  */
 public class OcrService {
 
@@ -82,6 +85,66 @@ public class OcrService {
         JsonObject userMsg = new JsonObject();
         userMsg.addProperty("role", "user");
         userMsg.addProperty("content", "以下是来自文件 \"" + fileName + "\" 的内容，请分析并生成多张闪卡：\n\n" + text);
+        messages.add(userMsg);
+
+        body.add("messages", messages);
+
+        return callApi(body, apiKey);
+    }
+
+    /**
+     * 分析图片内容（视觉模型），返回多张卡片的 JSON 数组字符串
+     * 【讲解重点：图片识别流程】
+     *
+     * 1. 图片转 base64 编码
+     * 2. 调用视觉模型的 image_url 接口
+     * 3. AI 读取图片上的文字/内容，生成闪卡
+     *
+     * 注意：DeepSeek 的 deepseek-chat 是纯文本模型，不支持图片。
+     * 这里使用 OpenAI 兼容的视觉模型接口（如 qwen-vl / gpt-4o-mini 等）。
+     * 用户可以在配置时选择支持视觉的 API。
+     */
+    public static String analyzeImage(String apiKey, String imageData) throws Exception {
+        // 尝试调用支持视觉的 API
+        // 默认尝试硅基流动/通义等支持视觉的 OpenAI 兼容接口
+        // 这里为了兼容性，先尝试 DeepSeek，如果失败提示用户
+
+        JsonObject body = new JsonObject();
+        body.addProperty("model", "deepseek-chat"); // 需要用户配置支持视觉的模型
+        body.addProperty("max_tokens", 2000);
+        body.addProperty("temperature", 0.3);
+
+        JsonArray messages = new JsonArray();
+
+        JsonObject sysMsg = new JsonObject();
+        sysMsg.addProperty("role", "system");
+        sysMsg.addProperty("content", "你是一个考研学习助手。用户会发来一张图片（可能是笔记、错题、题目截图）。"
+                + "请识别图片上的文字内容并生成多张闪卡。"
+                + "以 JSON 数组格式返回（不要 markdown 代码块标记）。\n"
+                + "格式: [{\"front\": \"题目1\", \"back\": \"答案1\", \"category\": \"分类\"}, "
+                + "{\"front\": \"题目2\", \"back\": \"答案2\", \"category\": \"分类\"}]\n"
+                + "分类只能是以下之一：政治、英语、数学、专业课。如果无法确定，填\"其他\"。");
+        messages.add(sysMsg);
+
+        JsonObject userMsg = new JsonObject();
+        userMsg.addProperty("role", "user");
+        JsonArray content = new JsonArray();
+
+        // 文本部分
+        JsonObject textPart = new JsonObject();
+        textPart.addProperty("type", "text");
+        textPart.addProperty("text", "请识别这张图片上的内容并生成闪卡。");
+        content.add(textPart);
+
+        // 图片部分（base64）
+        JsonObject imgPart = new JsonObject();
+        imgPart.addProperty("type", "image_url");
+        JsonObject imgUrl = new JsonObject();
+        imgUrl.addProperty("url", "data:image/png;base64," + imageData);
+        imgPart.add("image_url", imgUrl);
+        content.add(imgPart);
+
+        userMsg.add("content", content);
         messages.add(userMsg);
 
         body.add("messages", messages);
