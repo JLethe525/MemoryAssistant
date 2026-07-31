@@ -81,10 +81,17 @@ public class PomodoroView {
                 + "-fx-background-radius: 30; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; "
                 + "-fx-padding: 14 48; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(249,115,22,0.4), 15, 0, 0, 4);");
 
+        Button clearBtn = new Button("重置");
+        clearBtn.setStyle("-fx-background-color: rgba(255,255,255,0.08); -fx-background-radius: 30; -fx-text-fill: rgba(255,255,255,0.7); "
+                + "-fx-font-size: 13px; -fx-padding: 10 24; -fx-cursor: hand; -fx-border-color: rgba(255,255,255,0.15); -fx-border-radius: 30;");
+
         // 聚集布局
         VBox centerBox = new VBox(12);
         centerBox.setAlignment(Pos.CENTER);
-        centerBox.getChildren().addAll(canvasBox, statusLabel, startBtn);
+        HBox btnRow = new HBox(14);
+        btnRow.setAlignment(Pos.CENTER);
+        btnRow.getChildren().addAll(startBtn, clearBtn);
+        centerBox.getChildren().addAll(canvasBox, statusLabel, btnRow);
 
         // 底部提示
         Label tip = new Label("每完成一个番茄钟，记忆森林就会长出一棵新树");
@@ -103,6 +110,7 @@ public class PomodoroView {
 
         // 事件
         startBtn.setOnAction(e -> toggleTimer());
+        clearBtn.setOnAction(e -> resetAll());
 
         // 初始绘制
         draw();
@@ -133,6 +141,18 @@ public class PomodoroView {
     }
 
     private void resetTimer() {
+        isWork = true;
+        totalSeconds = WORK_MINUTES * 60;
+        remainingSeconds = totalSeconds;
+        statusLabel.setText("专注 25:00");
+        startBtn.setText("开始专注");
+        draw();
+    }
+
+    /** 重置按钮：停止计时并恢复到初始状态 */
+    private void resetAll() {
+        if (timer != null) timer.stop();
+        isRunning = false;
         isWork = true;
         totalSeconds = WORK_MINUTES * 60;
         remainingSeconds = totalSeconds;
