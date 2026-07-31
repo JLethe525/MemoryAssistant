@@ -86,9 +86,13 @@ public class FeynmanView {
                 + "-fx-font-size: 13px; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-weight: bold;");
         sendBtn.setDisable(true);
 
+        Button clearBtn = new Button("清除");
+        clearBtn.setStyle("-fx-background-color: rgba(255,255,255,0.08); -fx-background-radius: 10; -fx-text-fill: white; "
+                + "-fx-font-size: 13px; -fx-padding: 10 16; -fx-cursor: hand; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;");
+
         HBox inputRow = new HBox(12);
         inputRow.setPadding(new Insets(12, 0, 0, 0));
-        inputRow.getChildren().addAll(inputField, sendBtn);
+        inputRow.getChildren().addAll(inputField, sendBtn, clearBtn);
         HBox.setHgrow(inputField, Priority.ALWAYS);
 
         centerBox = new VBox(8);
@@ -101,6 +105,7 @@ public class FeynmanView {
         startBtn.setOnAction(e -> startSession());
         sendBtn.setOnAction(e -> sendMessage());
         inputField.setOnAction(e -> sendMessage());
+        clearBtn.setOnAction(e -> clearSession());
     }
 
     public BorderPane getView() { return view; }
@@ -184,6 +189,19 @@ public class FeynmanView {
 
     private void endSession() {
         sessionActive = false;
+        startBtn.setDisable(false);
+        cardSelector.setDisable(false);
+        sendBtn.setDisable(true);
+        inputField.setDisable(true);
+    }
+
+    /** 清除当前对话，可以重新选卡片 */
+    private void clearSession() {
+        sessionActive = false;
+        feynman = null;
+        currentCard = null;
+        chatArea.clear();
+        inputField.clear();
         startBtn.setDisable(false);
         cardSelector.setDisable(false);
         sendBtn.setDisable(true);
