@@ -165,7 +165,7 @@ public class CurveView {
             g.setFill(Color.rgb(255, 255, 255, 0.35));
             g.setFont(Font.font("Microsoft YaHei", 12));
             g.setTextAlign(TextAlignment.RIGHT);
-            g.fillText((100 - i * 20) + "%", ax - 8, y + 4);
+            g.fillText((i * 20) + "%", ax - 8, y + 4);
         }
 
         int[] days = {0, 1, 3, 7, 15, 30};
@@ -248,30 +248,21 @@ public class CurveView {
             // 画曲线
             g.beginPath();
             boolean firstPt = true;
+            // 平均 stage 作为复习加成系数（0~1）
+            double avgStage = stageCount.entrySet().stream()
+                    .mapToDouble(e -> e.getValue() * e.getKey()).sum() / totalCat;
+            double bonus = avgStage / 5.0;   // 0~1，复习越多越高
+
             for (int px = 0; px <= aw; px++) {
                 double t = px / aw * 30;
+                // 理论遗忘率（不复习）
                 double base = Math.exp(-t / lambda);
-                // 加权：stage 越高代表记忆越牢固，对整体记忆率贡献越大（线越高）
-                // 每张卡片按它的 stage 折算一个基础记忆强度，再叠加遗忘衰减
-                double weighted = 0;
-                for (int s = 0; s <= 5; s++) {
-                    long cnt = stageCount.getOrDefault(s, 0L);
-                    if (cnt == 0) continue;
-                    // 记忆强度：stage 越高强度越高（0~1 之间）
-                    double strength = s / 5.0;
-                    // 距离上次复习越久，遗忘越多；但基础强度高的卡片衰减后仍在更高位置
-                    double decay = Math.exp(-t / lambda);
-                    weighted += (strength + decay * 0.5) * cnt / totalCat;
-                }
-                double ret = (totalCat > 0 ? weighted : base) + breathe;
-                // 归一化到 0.1~1 之间显示
-                if (totalCat > 0) ret = 0.1 + ret * 0.9;
-                // 多学科时每条曲线加一个固定微偏移，避免完全重合
-                double yOffset = 0;
-                if (!singleMode && grouped.size() > 1) {
-                    yOffset = (colorIdx - 1) * 6 - (grouped.size() - 1) * 3; // 居中偏移
-                }
-                double x = ax + px, y = ay + ah - ah * ret + yOffset;
+                // 实际记忆率 = 理论遗忘 + 复习加成（越高越接近 100%）
+                // 加成项随时间也衰减，但始终让曲线高于理论虚线
+                double ret = base + (bonus * 0.4) * Math.exp(-t / (lambda * 2));
+                ret = Math.min(ret, 1.0);
+                double x = ax + px;
+                double y = ay + ah - ah * ret;
                 if (firstPt) { g.moveTo(x, y); firstPt = false; } else g.lineTo(x, y);
             }
 
@@ -282,21 +273,17 @@ public class CurveView {
 
             // 节点气泡
             boolean dense = totalCat > 10;
+            // 与画线一致的平均 stage 加成
+            double avgStage2 = stageCount.entrySet().stream()
+                    .mapToDouble(e -> e.getValue() * e.getKey()).sum() / totalCat;
+            double bonus2 = avgStage2 / 5.0;
+
             for (int s = 0; s <= 5; s++) {
                 int d = SpacedRepetition.INTERVALS[s];
                 double t = d;
                 double base2 = Math.exp(-t / lambda);
-                double w2 = 0;
-                for (int st = 0; st <= 5; st++) {
-                    long cnt = stageCount.getOrDefault(st, 0L);
-                    if (cnt == 0) continue;
-                    // 与画线公式保持一致：stage 越高记忆强度越高
-                    double strength = st / 5.0;
-                    double decay = Math.exp(-t / lambda);
-                    w2 += (strength + decay * 0.5) * cnt / totalCat;
-                }
-                double ret2 = (totalCat > 0 ? w2 : base2) + breathe;
-                if (totalCat > 0) ret2 = 0.1 + ret2 * 0.9;
+                double ret2 = base2 + (bonus2 * 0.4) * Math.exp(-t / (lambda * 2));
+                ret2 = Math.min(ret2, 1.0);
                 double nx = ax + aw * d / 30.0;
                 double ny = ay + ah - ah * ret2;
                 long cnt = stageCount.getOrDefault(s, 0L);
@@ -339,16 +326,11 @@ public class CurveView {
                 double lx = ax + aw + 6;
                 double lt = 30;
                 double lb = Math.exp(-lt / lambda);
-                double lw = 0;
-                for (int st = 0; st <= 5; st++) {
-                    long c = stageCount.getOrDefault(st, 0L);
-                    if (c == 0) continue;
-                    double strength = st / 5.0;
-                    double decay = Math.exp(-lt / lambda);
-                    lw += (strength + decay * 0.5) * c / totalCat;
-                }
-                double lr = (totalCat > 0 ? lw : lb) + breathe;
-                if (totalCat > 0) lr = 0.1 + lr * 0.9;
+                double avgStage3 = stageCount.entrySet().stream()
+                        .mapToDouble(e -> e.getValue() * e.getKey()).sum() / totalCat;
+                double bonus3 = avgStage3 / 5.0;
+                double lr = lb + (bonus3 * 0.4) * Math.exp(-lt / (lambda * 2));
+                lr = Math.min(lr, 1.0);
                 double ly = ay + ah - ah * lr;
                 g.setFill(color);
             }
