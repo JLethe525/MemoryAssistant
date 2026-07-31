@@ -248,19 +248,18 @@ public class CurveView {
             // 画曲线
             g.beginPath();
             boolean firstPt = true;
-            // 平均 stage 作为复习加成系数（0~1）
-            double avgStage = stageCount.entrySet().stream()
-                    .mapToDouble(e -> e.getValue() * e.getKey()).sum() / totalCat;
-            double bonus = avgStage / 5.0;   // 0~1，复习越多越高
-
             for (int px = 0; px <= aw; px++) {
                 double t = px / aw * 30;
-                // 理论遗忘率（不复习）
                 double base = Math.exp(-t / lambda);
-                // 实际记忆率 = 理论遗忘 + 复习加成（越高越接近 100%）
-                // 加成项随时间也衰减，但始终让曲线高于理论虚线
-                double ret = base + (bonus * 0.4) * Math.exp(-t / (lambda * 2));
-                ret = Math.min(ret, 1.0);
+                // 加权：每张卡片按它的 stage 对应间隔折算当前记忆残留
+                // stage 越高说明上次复习越久，残留越低；符合"遗忘曲线"语义
+                double weighted = 0;
+                for (int s = 0; s <= 5; s++) {
+                    long cnt = stageCount.getOrDefault(s, 0L);
+                    if (cnt == 0) continue;
+                    weighted += Math.exp(-(t + SpacedRepetition.INTERVALS[s]) / lambda) * cnt / totalCat;
+                }
+                double ret = (totalCat > 0 ? weighted : base) + breathe;
                 double x = ax + px;
                 double y = ay + ah - ah * ret;
                 if (firstPt) { g.moveTo(x, y); firstPt = false; } else g.lineTo(x, y);
@@ -273,17 +272,17 @@ public class CurveView {
 
             // 节点气泡
             boolean dense = totalCat > 10;
-            // 与画线一致的平均 stage 加成
-            double avgStage2 = stageCount.entrySet().stream()
-                    .mapToDouble(e -> e.getValue() * e.getKey()).sum() / totalCat;
-            double bonus2 = avgStage2 / 5.0;
-
             for (int s = 0; s <= 5; s++) {
                 int d = SpacedRepetition.INTERVALS[s];
                 double t = d;
                 double base2 = Math.exp(-t / lambda);
-                double ret2 = base2 + (bonus2 * 0.4) * Math.exp(-t / (lambda * 2));
-                ret2 = Math.min(ret2, 1.0);
+                double w2 = 0;
+                for (int st = 0; st <= 5; st++) {
+                    long cnt = stageCount.getOrDefault(st, 0L);
+                    if (cnt == 0) continue;
+                    w2 += Math.exp(-(t + SpacedRepetition.INTERVALS[st]) / lambda) * cnt / totalCat;
+                }
+                double ret2 = (totalCat > 0 ? w2 : base2) + breathe;
                 double nx = ax + aw * d / 30.0;
                 double ny = ay + ah - ah * ret2;
                 long cnt = stageCount.getOrDefault(s, 0L);
@@ -326,11 +325,13 @@ public class CurveView {
                 double lx = ax + aw + 6;
                 double lt = 30;
                 double lb = Math.exp(-lt / lambda);
-                double avgStage3 = stageCount.entrySet().stream()
-                        .mapToDouble(e -> e.getValue() * e.getKey()).sum() / totalCat;
-                double bonus3 = avgStage3 / 5.0;
-                double lr = lb + (bonus3 * 0.4) * Math.exp(-lt / (lambda * 2));
-                lr = Math.min(lr, 1.0);
+                double lw = 0;
+                for (int st = 0; st <= 5; st++) {
+                    long c = stageCount.getOrDefault(st, 0L);
+                    if (c == 0) continue;
+                    lw += Math.exp(-(lt + SpacedRepetition.INTERVALS[st]) / lambda) * c / totalCat;
+                }
+                double lr = (totalCat > 0 ? lw : lb) + breathe;
                 double ly = ay + ah - ah * lr;
                 g.setFill(color);
             }
