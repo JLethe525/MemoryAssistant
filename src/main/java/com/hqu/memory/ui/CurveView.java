@@ -165,7 +165,7 @@ public class CurveView {
             g.setFill(Color.rgb(255, 255, 255, 0.35));
             g.setFont(Font.font("Microsoft YaHei", 12));
             g.setTextAlign(TextAlignment.RIGHT);
-            g.fillText((i * 20) + "%", ax - 8, y + 4);
+            g.fillText((100 - i * 20) + "%", ax - 8, y + 4);
         }
 
         int[] days = {0, 1, 3, 7, 15, 30};
